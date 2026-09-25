@@ -569,7 +569,7 @@ app.post('/api/email/test-send', async (req, res) => {
     const result = await dispatchEmail(
       eventType as 'test' | 'advance' | 'birthday_midnight' | 'birth_moment' | 'tithi',
       year ? parseInt(year, 10) : undefined,
-      eventType !== 'birthday_midnight' && eventType !== 'birth_moment' && eventType !== 'tithi',
+      true, // Manual test send from Admin UI
       {
         recipientEmail,
         recipientName,

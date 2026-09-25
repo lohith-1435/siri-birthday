@@ -22,6 +22,9 @@ import {
   Sparkles,
   ShieldCheck,
   XCircle,
+  Monitor,
+  Smartphone,
+  ExternalLink,
 } from 'lucide-react';
 import { tithiService } from '../../services/tithiService';
 import { calculateTimelineStats } from '../../data/timelineData';
@@ -29,7 +32,11 @@ import { isSupabaseConfigured, supabase, type TithiDateRecord, type EmailLogReco
 import { audioEngine } from '../../utils/audioEngine';
 import {
   DEFAULT_EMAIL_TEMPLATES,
-  replaceEmailVariables,
+  generateAdvanceEmailHtml,
+  generateBirthdayMidnightEmailHtml,
+  generateBirthMomentEmailHtml,
+  generateTithiEmailHtml,
+  generateTestEmailHtml,
   type AllEmailTemplates,
 } from '../../../server/emailTemplates';
 
@@ -76,6 +83,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToFilm, onDataUpda
   const [templates, setTemplates] = useState<AllEmailTemplates>(DEFAULT_EMAIL_TEMPLATES);
   const [editingTemplateKey, setEditingTemplateKey] = useState<keyof AllEmailTemplates>('birthday_midnight');
   const [previewTemplateKey, setPreviewTemplateKey] = useState<keyof AllEmailTemplates>('birthday_midnight');
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
   const [isSavingTemplates, setIsSavingTemplates] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailMessage, setEmailMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -403,6 +411,38 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToFilm, onDataUpda
         },
       };
     });
+  };
+
+  const getActivePreviewHtml = (key: keyof AllEmailTemplates = previewTemplateKey): string => {
+    const context = {
+      name: recipientName || 'SIRI NANNAA',
+      year: stats.currentYear,
+      websiteUrl: websiteUrl || 'https://siri-birthday-brown.vercel.app/',
+      tithiDate: stats.currentYearTithi || '14 October',
+      recipient: recipientEmail,
+    };
+
+    if (key === 'advance') {
+      return generateAdvanceEmailHtml(templates.advance, context);
+    } else if (key === 'birthday_midnight') {
+      return generateBirthdayMidnightEmailHtml(templates.birthday_midnight, context);
+    } else if (key === 'birth_moment') {
+      return generateBirthMomentEmailHtml(templates.birth_moment, context);
+    } else if (key === 'tithi') {
+      return generateTithiEmailHtml(templates.tithi, context);
+    } else {
+      return generateTestEmailHtml(templates.test, context);
+    }
+  };
+
+  const handleOpenPreviewNewTab = () => {
+    const html = getActivePreviewHtml();
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+    }
   };
 
   const handleCopySql = () => {
@@ -1246,81 +1286,101 @@ CREATE TABLE IF NOT EXISTS email_logs (
               {/* Right: Live Render Preview */}
               <div className="lg:col-span-6 gold-card p-6 rounded-3xl border-gold-500/30 flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between border-b border-gold-500/20 pb-3 mb-4">
-                    <h3 className="font-cinzel text-sm font-bold text-gold-200 uppercase tracking-widest flex items-center gap-2">
-                      <Eye className="w-4 h-4 text-gold-400" /> Live Render Preview
-                    </h3>
-                    <div className="flex items-center gap-1.5">
-                      {(['test', 'advance', 'birthday_midnight', 'birth_moment', 'tithi'] as const).map((k) => (
-                        <button
-                          key={k}
-                          onClick={() => setPreviewTemplateKey(k)}
-                          className={`px-2 py-1 rounded text-[10px] font-cinzel uppercase transition-all ${
-                            previewTemplateKey === k
-                              ? 'bg-gold-500 text-obsidian-950 font-bold'
-                              : 'text-gray-400 hover:text-white bg-obsidian-950'
-                          }`}
-                        >
-                          {k === 'birthday_midnight' ? 'Midnight' : k === 'birth_moment' ? 'Moment' : k}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Preview Render Card */}
-                  <div className="rounded-2xl border border-gold-500/30 bg-[#030305] p-5 text-center text-[#FAF8F5] max-h-[520px] overflow-y-auto scrollbar-thin">
-                    <div className="max-w-md mx-auto p-6 rounded-2xl bg-gradient-to-b from-[#13101C] to-[#07060A] border border-gold-500/50 shadow-2xl">
-                      <div className="w-10 h-10 rounded-full border border-gold-400 mx-auto flex items-center justify-center text-gold-300 font-bold text-base mb-3 bg-gold-500/10">
-                        {previewTemplateKey === 'tithi'
-                          ? 'ॐ'
-                          : previewTemplateKey === 'birth_moment'
-                          ? '☀️'
-                          : previewTemplateKey === 'test'
-                          ? '🧪'
-                          : '✦'}
-                      </div>
-                      <p className="font-cinzel text-[10px] tracking-[0.25em] text-gold-300 uppercase mb-1 font-semibold">
-                        {templates[previewTemplateKey].topLabel || previewTemplateKey.toUpperCase()}
-                      </p>
-                      <h4 className="font-cinzel text-lg font-bold text-white uppercase tracking-wider mb-4">
-                        {replaceEmailVariables(templates[previewTemplateKey].heading, {
-                          name: recipientName,
-                          currentYear: stats.currentYear,
-                          tithiDate: stats.currentYearTithi || '14 October',
-                          websiteUrl,
-                          recipient: recipientEmail,
-                        })}
-                      </h4>
-
-                      <div className="text-xs text-gray-300 font-sans leading-relaxed my-4 space-y-2 text-left">
-                        {replaceEmailVariables(templates[previewTemplateKey].message, {
-                          name: recipientName,
-                          currentYear: stats.currentYear,
-                          tithiDate: stats.currentYearTithi || '14 October',
-                          websiteUrl,
-                          recipient: recipientEmail,
-                        })
-                          .split('\n\n')
-                          .map((p, idx) => (
-                            <p key={idx} className="my-1.5">
-                              {p}
-                            </p>
-                          ))}
-                      </div>
-
-                      <a
-                        href={websiteUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-block mt-4 px-6 py-2.5 rounded-full bg-gradient-to-r from-gold-500 to-amber-600 text-obsidian-950 font-cinzel font-bold text-xs uppercase tracking-wider shadow-md hover:from-gold-400 hover:to-amber-500 transition-all"
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gold-500/20 pb-3 mb-4">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-cinzel text-sm font-bold text-gold-200 uppercase tracking-widest flex items-center gap-2">
+                        <Eye className="w-4 h-4 text-gold-400" /> Live Render Preview
+                      </h3>
+                      <button
+                        onClick={handleOpenPreviewNewTab}
+                        className="p-1 rounded-lg bg-obsidian-950 hover:bg-gold-500/10 border border-gold-500/30 text-gold-300 hover:text-white transition-all"
+                        title="Open Fullscreen in New Tab"
                       >
-                        {replaceEmailVariables(templates[previewTemplateKey].buttonText, {
-                          name: recipientName,
-                          currentYear: stats.currentYear,
-                        })}
-                      </a>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {/* Device View Switcher */}
+                      <div className="flex items-center bg-obsidian-950 p-0.5 rounded-lg border border-gold-500/20">
+                        <button
+                          onClick={() => setPreviewDevice('desktop')}
+                          className={`p-1.5 rounded text-xs transition-all ${
+                            previewDevice === 'desktop'
+                              ? 'bg-gold-500 text-obsidian-950 font-bold'
+                              : 'text-gray-400 hover:text-white'
+                          }`}
+                          title="Desktop View (600px)"
+                        >
+                          <Monitor className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setPreviewDevice('mobile')}
+                          className={`p-1.5 rounded text-xs transition-all ${
+                            previewDevice === 'mobile'
+                              ? 'bg-gold-500 text-obsidian-950 font-bold'
+                              : 'text-gray-400 hover:text-white'
+                          }`}
+                          title="Mobile View (375px)"
+                        >
+                          <Smartphone className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      {/* Template Selector Pills */}
+                      <div className="flex items-center gap-1 overflow-x-auto">
+                        {(['test', 'advance', 'birthday_midnight', 'birth_moment', 'tithi'] as const).map((k) => (
+                          <button
+                            key={k}
+                            onClick={() => {
+                              setPreviewTemplateKey(k);
+                              setEditingTemplateKey(k);
+                            }}
+                            className={`px-2 py-1 rounded text-[10px] font-cinzel uppercase transition-all ${
+                              previewTemplateKey === k
+                                ? 'bg-gold-500 text-obsidian-950 font-bold shadow-sm'
+                                : 'text-gray-400 hover:text-white bg-obsidian-950'
+                            }`}
+                          >
+                            {k === 'birthday_midnight' ? 'Midnight' : k === 'birth_moment' ? 'Moment' : k}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
+
+                  {/* Pixel-Perfect Iframe Container */}
+                  <div className="flex justify-center items-center bg-[#030204] p-2 sm:p-3 rounded-2xl border border-gold-500/25 shadow-inner">
+                    <div
+                      style={{
+                        width: previewDevice === 'mobile' ? '375px' : '100%',
+                        maxWidth: '600px',
+                        transition: 'all 0.3s ease',
+                      }}
+                      className="rounded-xl overflow-hidden shadow-2xl border border-gold-500/30"
+                    >
+                      <iframe
+                        title="Email Live Preview"
+                        srcDoc={getActivePreviewHtml()}
+                        className="w-full h-[600px] bg-[#060408] border-0"
+                        sandbox="allow-same-origin allow-popups"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preview Actions Footer */}
+                <div className="flex items-center justify-between pt-4 mt-4 border-t border-gold-500/15 text-xs">
+                  <div className="text-[11px] text-gray-400 font-outfit">
+                    Rendering <span className="text-gold-300 font-semibold uppercase">{previewTemplateKey}</span> for{' '}
+                    <span className="text-white font-semibold">{recipientName}</span>
+                  </div>
+                  <button
+                    onClick={() => handleOpenConfirmModal(previewTemplateKey)}
+                    className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 text-obsidian-950 font-cinzel font-bold text-xs uppercase flex items-center gap-1.5 shadow-md"
+                  >
+                    <Send className="w-3.5 h-3.5" /> Test Send This Email
+                  </button>
                 </div>
               </div>
             </div>

@@ -23,11 +23,11 @@ export interface AllEmailTemplates {
 export const DEFAULT_EMAIL_TEMPLATES: AllEmailTemplates = {
   test: {
     subject: 'Email System Test — SIRI Birthday Experience ✨',
-    topLabel: 'TEST EMAIL',
-    heading: 'YOUR EMAIL EXPERIENCE IS WORKING',
-    message: `This test email verifies that your email delivery and template rendering system is active and functioning properly.\n\nThis test email does not affect the real birthday schedule, Tithi schedule, or real event history.`,
+    topLabel: 'SYSTEM VERIFICATION DISPATCH',
+    heading: 'EMAIL AUTOMATION LIVE TEST',
+    message: `This test email verifies that your email delivery, dynamic variable interpolation, and luxury email rendering engine are fully operational.\n\nThis test dispatch does not affect the automated yearly calendar, Tithi triggers, or live delivery audit records.`,
     buttonText: 'OPEN BIRTHDAY EXPERIENCE →',
-    websiteUrl: 'http://localhost:5173',
+    websiteUrl: 'https://siri-birthday-brown.vercel.app/',
     deepLinkScene: '',
     footer: `SIRI — A JOURNEY WRITTEN IN THE STARS\nA small experience created with love, admiration and respect.`,
     enabled: true,
@@ -35,10 +35,10 @@ export const DEFAULT_EMAIL_TEMPLATES: AllEmailTemplates = {
   advance: {
     subject: 'A Little Early… But With Love, SIRI ✨',
     topLabel: 'A LETTER BEFORE YOUR DAY',
-    heading: 'YOUR SPECIAL DAY IS NEAR',
-    message: `Some days arrive on a calendar.\n\nSome days carry a meaning of their own.\n\nYours is one of those days.\n\nBefore the day arrives, we simply wanted to leave you a little message…\n\nAdvance Happy Birthday, SIRI. ❤️\n\nMay the year ahead bring you moments that make you smile,\npeople who value you,\nand memories that stay close to your heart.\n\nYour story has already come a long way.\n\nAnd there is still so much more to be written.`,
+    heading: 'ADVANCE HAPPY BIRTHDAY',
+    message: `Some days arrive on a calendar.\nSome days carry a meaning of their own.\n\nYours is one of those days.\n\nBefore the day arrives, we simply wanted to leave you a little message…\n\nAdvance Happy Birthday, {{name}}. ❤️\n\nMay the year ahead bring you moments that make you smile,\npeople who value you,\nand memories that stay close to your heart.\n\nYour story has already come a long way.\n\nAnd there is still so much more to be written.`,
     buttonText: 'STEP INTO YOUR STORY →',
-    websiteUrl: 'http://localhost:5173',
+    websiteUrl: 'https://siri-birthday-brown.vercel.app/',
     deepLinkScene: 'birthday',
     footer: `SIRI — A JOURNEY WRITTEN IN THE STARS\nA small experience created with love, admiration and respect.`,
     enabled: true,
@@ -47,39 +47,39 @@ export const DEFAULT_EMAIL_TEMPLATES: AllEmailTemplates = {
     subject: 'The Day Has Arrived, SIRI ✨',
     topLabel: 'MIDNIGHT COSMIC MILESTONE',
     heading: 'THE DAY HAS ARRIVED',
-    message: `Today isn't just another date.\n\nIt's the day your story began.\n\nHappy Birthday, SIRI. ❤️\n\nMay this new chapter bring beautiful moments,\nmeaningful journeys,\nand memories worth keeping forever.`,
+    message: `Today isn't just another date.\n\nIt's the day your story began.\n\nHappy Birthday, {{name}}. ❤️\n\nMay this new chapter bring beautiful moments,\nmeaningful journeys,\nand memories worth keeping forever.`,
     buttonText: 'ENTER YOUR STORY →',
-    websiteUrl: 'http://localhost:5173',
+    websiteUrl: 'https://siri-birthday-brown.vercel.app/',
     deepLinkScene: 'birthday',
     footer: `SIRI — A JOURNEY WRITTEN IN THE STARS\nA small experience created with love, admiration and respect.`,
     enabled: true,
   },
   birth_moment: {
     subject: 'At 8:00 AM — The Moment It All Began ✨',
-    topLabel: 'THE EXACT BIRTH MOMENT · 08:00 AM IST',
+    topLabel: '28 SEPTEMBER · 08:00 AM IST',
     heading: 'THE MOMENT IT ALL BEGAN',
-    message: `At this exact moment, years ago,\na beautiful journey began.\n\nToday, we pause for a moment to remember where it all started.\n\nYou. Your journey. Your story.\n\nFrom that first moment to everything you have become today,\nevery chapter has its own meaning.\n\nHappy Birthday, SIRI. ❤️`,
+    message: `At this exact moment, years ago,\na beautiful journey began.\n\nToday, we pause for a moment to remember where it all started.\n\nYou. Your journey. Your story.\n\nFrom that first moment to everything you have become today,\nevery chapter has its own meaning.\n\nHappy Birthday, {{name}}. ❤️`,
     buttonText: 'REVISIT YOUR BEGINNING →',
-    websiteUrl: 'http://localhost:5173',
+    websiteUrl: 'https://siri-birthday-brown.vercel.app/',
     deepLinkScene: 'birth-moment',
     footer: `SIRI — A JOURNEY WRITTEN IN THE STARS\nA small experience created with love, admiration and respect.`,
     enabled: true,
   },
   tithi: {
     subject: 'A Divine Birthday Blessing ✨',
-    topLabel: 'SACRED LUNAR RETURN',
-    heading: 'TODAY, YOUR TITHI RETURNS',
-    message: `Some moments are measured by dates.\n\nSome are remembered by something deeper.\n\nToday, your corresponding birth Tithi returns.\n\nAshwayuja Shukla Tritiya\n\nA day connected to the beginning of your journey.\n\nBorn under the divine blessings of Sharan Navaratri.\n\nMay this sacred day bring peace, happiness, strength and beautiful blessings into the year ahead.`,
-    buttonText: 'DISCOVER YOUR TITHI →',
-    websiteUrl: 'http://localhost:5173',
+    topLabel: 'SACRED LUNAR RETURN · {{current_year}}',
+    heading: 'A DIVINE BIRTHDAY BLESSING',
+    message: `Dear {{name}},\n\nYour solar birth date is remembered every year on 28 September.\n\nAccording to the sacred Hindu lunar tradition, your corresponding birth Tithi returns today on {{tithi_date}} {{current_year}} under the divine auspiciousness of Sharan Navaratri.\n\nMay the divine blessings of Goddess Durga bring eternal peace, good health, flourishing prosperity, and radiant joy to you throughout this year.`,
+    buttonText: "DISCOVER TODAY'S TITHI →",
+    websiteUrl: 'https://siri-birthday-brown.vercel.app/',
     deepLinkScene: 'tithi',
-    footer: `SIRI — A JOURNEY WRITTEN IN THE STARS\nA small experience created with love, admiration and respect.`,
+    footer: `SIRI — SHARAN NAVARATRI LUNAR ANNIVERSARY\nA small experience created with love, admiration and respect.`,
     enabled: true,
   },
 };
 
 /**
- * Evaluates template variables: {{name}}, {{age}}, {{birth_date}}, {{birth_time}}, {{current_year}}, {{tithi_date}}, {{tithi_name}}, {{website_url}}
+ * Evaluates template variables: {{name}}, {{age}}, {{birth_date}}, {{birth_time}}, {{current_year}}, {{tithi_date}}, {{tithi_name}}, {{website_url}}, {{recipient}}, {{sent_at}}
  */
 export function replaceEmailVariables(
   text: string,
@@ -104,7 +104,7 @@ export function replaceEmailVariables(
   const birthTime = data.birthTime || '08:00 AM IST';
   const tithiDate = data.tithiDate || '14 October';
   const tithiName = data.tithiName || 'Ashwayuja Shukla Tritiya';
-  const websiteUrl = data.websiteUrl || 'http://localhost:5173';
+  const websiteUrl = data.websiteUrl || 'https://siri-birthday-brown.vercel.app/';
   const recipient = data.recipient || 'siri@example.com';
   const sentAt = data.sentAt || new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) + ' IST';
 
@@ -121,184 +121,154 @@ export function replaceEmailVariables(
     .replace(/\{\{sent_at\}\}/gi, sentAt);
 }
 
-function buildDestinationUrl(baseUrl: string, sceneParam?: string): string {
-  let url = (baseUrl || 'http://localhost:5173').trim();
+export function buildDestinationUrl(baseUrl: string, sceneParam?: string): string {
+  let url = (baseUrl || 'https://siri-birthday-brown.vercel.app/').trim();
   if (!sceneParam) return url;
   const separator = url.includes('?') ? '&' : '?';
   return `${url}${separator}scene=${encodeURIComponent(sceneParam)}`;
 }
 
-// 1. TEST EMAIL HTML
-export function generateTestEmailHtml(
-  customConfig?: Partial<CustomEmailTemplateConfig>,
-  contextData: { name?: string; year?: number; websiteUrl?: string; recipient?: string } = {}
-): string {
-  const config = { ...DEFAULT_EMAIL_TEMPLATES.test, ...customConfig };
-  const year = contextData.year || new Date().getFullYear();
-  const name = contextData.name || 'SIRI';
-  const recipient = contextData.recipient || 'siri@example.com';
-  const websiteUrl = contextData.websiteUrl || config.websiteUrl;
-  const destinationUrl = buildDestinationUrl(websiteUrl, config.deepLinkScene);
-  const sentAt = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) + ' IST';
+/**
+ * Applies golden highlights to key words, dates, and names in body text
+ */
+function highlightLuxuryPhrases(text: string, recipientName: string = 'SIRI'): string {
+  let formatted = text;
 
-  const heading = replaceEmailVariables(config.heading, { name, currentYear: year, recipient, sentAt, websiteUrl });
-  const rawMessage = replaceEmailVariables(config.message, { name, currentYear: year, recipient, sentAt, websiteUrl });
-  const messageHtml = rawMessage
-    .split('\n\n')
-    .map((p) => `<p style="margin: 0 0 16px 0; color: #E8E4DF; font-size: 15px; line-height: 1.8;">${p.replace(/\n/g, '<br>')}</p>`)
-    .join('');
-  const buttonText = replaceEmailVariables(config.buttonText, { name, currentYear: year });
-  const footerText = replaceEmailVariables(config.footer || '', { name, currentYear: year });
+  // Highlight recipient name if not already wrapped in span
+  const safeName = recipientName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (safeName && safeName.length > 1) {
+    const nameRegex = new RegExp(`(?<!<[^>]*)\\b(${safeName})\\b(?![^<]*>)`, 'gi');
+    formatted = formatted.replace(
+      nameRegex,
+      `<span style="color: #F3E5AB; font-weight: 700; text-shadow: 0 0 10px rgba(243,229,171,0.35);">$1</span>`
+    );
+  }
 
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${replaceEmailVariables(config.subject, { name, currentYear: year })}</title>
-</head>
-<body style="margin: 0; padding: 0; background-color: #030305; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #FAF8F5;">
-  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #030305; padding: 35px 12px;">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background: linear-gradient(150deg, #121019 0%, #07060A 100%); border: 1px solid #D4AF37; border-radius: 24px; overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,0.95);">
-          
-          <!-- Top Label & Icon -->
-          <tr>
-            <td align="center" style="padding: 40px 30px 20px 30px; border-bottom: 1px solid rgba(212,175,55,0.25);">
-              <div style="width: 52px; height: 52px; border-radius: 50%; border: 1px solid #D4AF37; line-height: 52px; text-align: center; color: #D4AF37; font-size: 20px; font-weight: bold; margin-bottom: 16px; background-color: rgba(212,175,55,0.1); box-shadow: 0 0 20px rgba(212,175,55,0.25);">
-                🧪
-              </div>
-              <p style="margin: 0; font-size: 11px; letter-spacing: 4px; color: #D4AF37; text-transform: uppercase; font-weight: 700;">
-                ${config.topLabel || 'TEST EMAIL'}
-              </p>
-              <h1 style="margin: 14px 0 0 0; font-size: 26px; font-weight: 700; letter-spacing: 2px; color: #FAF8F5; text-transform: uppercase;">
-                ${heading}
-              </h1>
-            </td>
-          </tr>
+  // Highlight standard key milestone terms
+  const terms = [
+    '28 September 2003',
+    '28 September 2026',
+    '28 September',
+    '14 October 2026',
+    '14 October',
+    'Sharan Navaratri',
+    'Ashwayuja Shukla Tritiya',
+    'Goddess Durga',
+    'Advance Happy Birthday',
+    'Happy Birthday',
+  ];
 
-          <!-- Test Details Card -->
-          <tr>
-            <td align="center" style="padding: 24px 30px 10px 30px;">
-              <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="background-color: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.3); border-radius: 16px; padding: 16px 24px; width: 100%; text-align: left;">
-                <tr>
-                  <td style="color: #D4AF37; font-size: 12px; font-weight: 600; padding: 4px 0;">MODE:</td>
-                  <td style="color: #FAF8F5; font-size: 12px; font-weight: 700; padding: 4px 0; text-align: right;">TEST</td>
-                </tr>
-                <tr>
-                  <td style="color: #D4AF37; font-size: 12px; font-weight: 600; padding: 4px 0;">RECIPIENT:</td>
-                  <td style="color: #FAF8F5; font-size: 12px; padding: 4px 0; text-align: right;">${recipient}</td>
-                </tr>
-                <tr>
-                  <td style="color: #D4AF37; font-size: 12px; font-weight: 600; padding: 4px 0;">SENT AT:</td>
-                  <td style="color: #FAF8F5; font-size: 12px; padding: 4px 0; text-align: right;">${sentAt}</td>
-                </tr>
-                <tr>
-                  <td style="color: #D4AF37; font-size: 12px; font-weight: 600; padding: 4px 0;">EVENT:</td>
-                  <td style="color: #FAF8F5; font-size: 12px; padding: 4px 0; text-align: right;">Test Email Verification</td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+  terms.forEach((term) => {
+    const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(?<!<[^>]*)\\b(${safeTerm})\\b(?![^<]*>)`, 'gi');
+    formatted = formatted.replace(
+      regex,
+      `<span style="color: #E6C687; font-weight: 700;">$1</span>`
+    );
+  });
 
-          <!-- Message Body -->
-          <tr>
-            <td style="padding: 20px 40px 25px 40px; text-align: center;">
-              ${messageHtml}
-            </td>
-          </tr>
-
-          <!-- Button -->
-          <tr>
-            <td align="center" style="padding: 10px 40px 35px 40px;">
-              <table role="presentation" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td align="center" style="border-radius: 50px; background: linear-gradient(135deg, #E5CD74 0%, #D4AF37 50%, #997A26 100%); box-shadow: 0 10px 30px rgba(212,175,55,0.35);">
-                    <a href="${destinationUrl}" target="_blank" style="display: inline-block; padding: 15px 34px; font-size: 13px; font-weight: 800; letter-spacing: 2px; text-decoration: none; color: #07060A; text-transform: uppercase; border-radius: 50px;">
-                      ${buttonText}
-                    </a>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td align="center" style="padding: 22px 30px; background-color: #050408; border-top: 1px solid rgba(212,175,55,0.2);">
-              <p style="margin: 0; font-size: 11px; letter-spacing: 1px; color: #8F8A82; line-height: 1.6;">
-                ${footerText.replace(/\n/g, '<br>')}
-              </p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-  `;
+  return formatted;
 }
 
-// 2. ADVANCE BIRTHDAY EMAIL HTML
+/**
+ * Formats a golden signature name with refined letter spacing and glow
+ */
+function formatGoldenSignatureName(name: string): string {
+  const upper = (name || 'SIRI').trim().toUpperCase();
+  return `<span style="display: inline-block; color: #F3E5AB; font-size: 24px; font-weight: 800; letter-spacing: 5px; text-transform: uppercase; font-family: 'Cinzel', 'Playfair Display', Georgia, serif; text-shadow: 0 0 16px rgba(243, 229, 171, 0.45); line-height: 1.3; word-break: normal; white-space: normal;">${upper}</span>`;
+}
+
+// =========================================================================
+// 1. ADVANCE BIRTHDAY EMAIL (Letter Before Your Day)
+// =========================================================================
 export function generateAdvanceEmailHtml(
   customConfig?: Partial<CustomEmailTemplateConfig>,
-  contextData: { name?: string; year?: number; websiteUrl?: string; tithiDate?: string } = {}
+  contextData: { name?: string; year?: number; websiteUrl?: string; recipient?: string } = {}
 ): string {
   const config = { ...DEFAULT_EMAIL_TEMPLATES.advance, ...customConfig };
   const year = contextData.year || new Date().getFullYear();
   const name = contextData.name || 'SIRI';
   const websiteUrl = contextData.websiteUrl || config.websiteUrl;
-  const destinationUrl = buildDestinationUrl(websiteUrl, config.deepLinkScene);
+  const destinationUrl = buildDestinationUrl(websiteUrl, config.deepLinkScene || 'birthday');
 
-  const heading = replaceEmailVariables(config.heading, { name, currentYear: year, websiteUrl });
+  const subject = replaceEmailVariables(config.subject, { name, currentYear: year, websiteUrl });
+  const topLabel = replaceEmailVariables(config.topLabel || 'A LETTER BEFORE YOUR DAY', { name, currentYear: year });
+  const heading = replaceEmailVariables(config.heading || 'ADVANCE HAPPY BIRTHDAY', { name, currentYear: year });
   const rawMessage = replaceEmailVariables(config.message, { name, currentYear: year, websiteUrl });
-  const messageHtml = rawMessage
-    .split('\n\n')
-    .map((p) => `<p style="margin: 0 0 16px 0; color: #E8E4DF; font-size: 15px; line-height: 1.8;">${p.replace(/\n/g, '<br>')}</p>`)
-    .join('');
   const buttonText = replaceEmailVariables(config.buttonText, { name, currentYear: year });
   const footerText = replaceEmailVariables(config.footer || '', { name, currentYear: year });
 
-  return `
-<!DOCTYPE html>
-<html>
+  const paragraphs = rawMessage
+    .split('\n\n')
+    .map((p) => {
+      const highlighted = highlightLuxuryPhrases(p.replace(/\n/g, '<br>'), name);
+      return `<p style="margin: 0 0 16px 0; color: #E8E2D8; font-size: 15px; line-height: 1.85; font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${highlighted}</p>`;
+    })
+    .join('');
+
+  return `<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${replaceEmailVariables(config.subject, { name, currentYear: year })}</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>${subject}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800;900&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap');
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+    @media screen and (max-width: 600px) {
+      .email-container { width: 100% !important; border-radius: 12px !important; }
+      .email-content { padding: 24px 20px !important; }
+      .email-heading { font-size: 22px !important; }
+      .signature-name { font-size: 20px !important; letter-spacing: 5px !important; }
+      .panel-card { padding: 16px 16px !important; }
+      .panel-date { font-size: 18px !important; }
+      .cta-button { padding: 14px 28px !important; font-size: 12px !important; }
+    }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #030305; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #FAF8F5;">
-  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #030305; padding: 35px 12px;">
+<body style="margin: 0; padding: 0; background-color: #060408; font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #FAF8F5;">
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #060408; background-image: radial-gradient(circle at 50% 15%, #180a18 0%, #060408 70%); padding: 35px 12px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background: linear-gradient(150deg, #171122 0%, #07060A 100%); border: 1px solid #D4AF37; border-radius: 24px; overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,0.95);">
+        <!-- Main Email Frame -->
+        <table role="presentation" class="email-container" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background: linear-gradient(175deg, #170b19 0%, #0d0610 45%, #060408 100%); border: 1px solid #C5A059; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 70px rgba(0,0,0,0.95), 0 0 35px rgba(197,160,89,0.12);">
           
-          <!-- Top Header -->
+          <!-- Top Emblem & Header -->
           <tr>
-            <td align="center" style="padding: 40px 30px 20px 30px; border-bottom: 1px solid rgba(212,175,55,0.25);">
-              <div style="width: 52px; height: 52px; border-radius: 50%; border: 1px solid #D4AF37; line-height: 52px; text-align: center; color: #D4AF37; font-size: 20px; font-weight: bold; margin-bottom: 16px; background-color: rgba(212,175,55,0.1); box-shadow: 0 0 20px rgba(212,175,55,0.25);">
-                ✨
+            <td align="center" style="padding: 42px 30px 24px 30px; border-bottom: 1px solid rgba(197,160,89,0.25);">
+              <div style="width: 54px; height: 54px; border-radius: 50%; border: 1px solid #D4AF37; line-height: 54px; text-align: center; color: #F3E5AB; font-size: 22px; font-weight: bold; margin-bottom: 18px; background: radial-gradient(circle, rgba(212,175,55,0.25) 0%, rgba(212,175,55,0.05) 100%); box-shadow: 0 0 22px rgba(212,175,55,0.35);">
+                ✧
               </div>
-              <p style="margin: 0; font-size: 11px; letter-spacing: 4px; color: #D4AF37; text-transform: uppercase; font-weight: 700;">
-                ${config.topLabel || 'A LETTER BEFORE YOUR DAY'}
+              <p style="margin: 0 0 8px 0; font-size: 11px; letter-spacing: 4.5px; color: #D4AF37; text-transform: uppercase; font-weight: 700; font-family: 'Cinzel', Georgia, serif;">
+                ${topLabel}
               </p>
-              <h1 style="margin: 14px 0 0 0; font-size: 28px; font-weight: 700; letter-spacing: 2px; color: #FAF8F5; text-transform: uppercase;">
+              <h1 class="email-heading" style="margin: 0 0 14px 0; font-size: 26px; font-weight: 700; letter-spacing: 3px; color: #FAF8F5; text-transform: uppercase; font-family: 'Cinzel', Georgia, serif; line-height: 1.3;">
                 ${heading}
               </h1>
+              <div class="signature-name" style="margin-top: 6px;">
+                ${formatGoldenSignatureName(name)}
+              </div>
             </td>
           </tr>
 
-          <!-- Golden Date Plaque -->
+          <!-- Highlighted Date Panel -->
           <tr>
-            <td align="center" style="padding: 24px 30px 10px 30px;">
-              <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="background-color: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.35); border-radius: 50px; padding: 10px 28px;">
+            <td align="center" style="padding: 28px 32px 12px 32px;">
+              <table role="presentation" class="panel-card" border="0" cellspacing="0" cellpadding="0" style="width: 100%; background: linear-gradient(135deg, rgba(197,160,89,0.12) 0%, rgba(30,12,30,0.4) 100%); border: 1px solid #C5A059; border-radius: 16px; padding: 20px 24px; text-align: center; box-shadow: inset 0 0 25px rgba(197,160,89,0.06);">
                 <tr>
-                  <td align="center" style="color: #FFF8E7; font-size: 13px; letter-spacing: 2px; font-weight: 700;">
-                    28 SEPTEMBER ${year} · The next chapter awaits.
+                  <td align="center">
+                    <p style="margin: 0 0 6px 0; font-size: 10.5px; letter-spacing: 3px; color: #D4AF37; text-transform: uppercase; font-weight: 700; font-family: 'Cinzel', Georgia, serif;">
+                      YOUR SPECIAL DAY IS NEAR
+                    </p>
+                    <p class="panel-date" style="margin: 0; font-size: 22px; color: #FFF8E7; font-weight: 800; letter-spacing: 2px; font-family: 'Cinzel', Georgia, serif; text-shadow: 0 0 12px rgba(255,248,231,0.3);">
+                      28 SEPTEMBER ${year}
+                    </p>
+                    <p style="margin: 6px 0 0 0; font-size: 12px; color: #E6C687; font-style: italic; letter-spacing: 1.5px; font-family: 'Playfair Display', Georgia, serif;">
+                      The next chapter awaits
+                    </p>
                   </td>
                 </tr>
               </table>
@@ -307,30 +277,47 @@ export function generateAdvanceEmailHtml(
 
           <!-- Message Body -->
           <tr>
-            <td style="padding: 22px 40px 28px 40px; text-align: center;">
-              ${messageHtml}
+            <td class="email-content" style="padding: 24px 44px 20px 44px; text-align: center;">
+              ${paragraphs}
             </td>
           </tr>
 
-          <!-- Button -->
+          <!-- CTA Button Section -->
           <tr>
-            <td align="center" style="padding: 10px 40px 38px 40px;">
-              <table role="presentation" border="0" cellspacing="0" cellpadding="0">
+            <td align="center" style="padding: 14px 40px 10px 40px;">
+              <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                 <tr>
-                  <td align="center" style="border-radius: 50px; background: linear-gradient(135deg, #E5CD74 0%, #D4AF37 50%, #997A26 100%); box-shadow: 0 10px 30px rgba(212,175,55,0.35);">
-                    <a href="${destinationUrl}" target="_blank" style="display: inline-block; padding: 16px 36px; font-size: 13px; font-weight: 800; letter-spacing: 2px; text-decoration: none; color: #07060A; text-transform: uppercase; border-radius: 50px;">
+                  <td align="center" style="border-radius: 50px; background: linear-gradient(135deg, #F5E6B3 0%, #D4AF37 50%, #997A26 100%); box-shadow: 0 10px 30px rgba(212,175,55,0.35);">
+                    <a href="${destinationUrl}" target="_blank" class="cta-button" style="display: inline-block; padding: 16px 36px; font-size: 13px; font-weight: 800; letter-spacing: 2px; text-decoration: none; color: #07060A; text-transform: uppercase; border-radius: 50px; font-family: 'Cinzel', Georgia, serif;">
                       ${buttonText}
                     </a>
                   </td>
                 </tr>
               </table>
+
+              <!-- Visible Configured Destination URL -->
+              <div style="margin-top: 14px; text-align: center;">
+                <a href="${destinationUrl}" target="_blank" style="color: #C5A059; font-size: 11.5px; font-family: 'Montserrat', monospace, sans-serif; text-decoration: underline; letter-spacing: 0.5px; word-break: break-all;">
+                  🔗 ${destinationUrl}
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Lower Celestial Visual Accent -->
+          <tr>
+            <td align="center" style="padding: 22px 0 12px 0; color: #8F7745; font-size: 11px; letter-spacing: 8px;">
+              ✦ &nbsp; · &nbsp; ✧ &nbsp; · &nbsp; ✦
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td align="center" style="padding: 22px 30px; background-color: #050408; border-top: 1px solid rgba(212,175,55,0.2);">
-              <p style="margin: 0; font-size: 11px; letter-spacing: 1px; color: #8F8A82; line-height: 1.6;">
+            <td align="center" style="padding: 24px 30px; background-color: #060408; border-top: 1px solid rgba(197,160,89,0.22);">
+              <p style="margin: 0 0 6px 0; font-size: 11px; letter-spacing: 2.5px; color: #C5A059; font-weight: 700; font-family: 'Cinzel', Georgia, serif; text-transform: uppercase;">
+                SIRI — A JOURNEY WRITTEN IN THE STARS
+              </p>
+              <p style="margin: 0; font-size: 11px; letter-spacing: 1px; color: #8F8A82; line-height: 1.6; font-family: 'Montserrat', sans-serif;">
                 ${footerText.replace(/\n/g, '<br>')}
               </p>
             </td>
@@ -341,67 +328,99 @@ export function generateAdvanceEmailHtml(
     </tr>
   </table>
 </body>
-</html>
-  `;
+</html>`;
 }
 
-// 3. REAL BIRTHDAY MIDNIGHT EMAIL HTML (12:00 AM IST, 28 September)
+// =========================================================================
+// 2. REAL BIRTHDAY MIDNIGHT EMAIL (12:00 AM IST, 28 September)
+// =========================================================================
 export function generateBirthdayMidnightEmailHtml(
   customConfig?: Partial<CustomEmailTemplateConfig>,
-  contextData: { name?: string; year?: number; websiteUrl?: string; tithiDate?: string } = {}
+  contextData: { name?: string; year?: number; websiteUrl?: string; recipient?: string } = {}
 ): string {
   const config = { ...DEFAULT_EMAIL_TEMPLATES.birthday_midnight, ...customConfig };
   const year = contextData.year || new Date().getFullYear();
   const name = contextData.name || 'SIRI';
   const age = calculateDynamicAge(new Date(`${year}-09-28T08:00:00+05:30`));
   const websiteUrl = contextData.websiteUrl || config.websiteUrl;
-  const destinationUrl = buildDestinationUrl(websiteUrl, config.deepLinkScene);
+  const destinationUrl = buildDestinationUrl(websiteUrl, config.deepLinkScene || 'birthday');
 
-  const heading = replaceEmailVariables(config.heading, { name, age, currentYear: year, websiteUrl });
+  const subject = replaceEmailVariables(config.subject, { name, age, currentYear: year, websiteUrl });
+  const topLabel = replaceEmailVariables(config.topLabel || 'MIDNIGHT COSMIC MILESTONE', { name, age, currentYear: year });
+  const heading = replaceEmailVariables(config.heading || 'THE DAY HAS ARRIVED', { name, age, currentYear: year });
   const rawMessage = replaceEmailVariables(config.message, { name, age, currentYear: year, websiteUrl });
-  const messageHtml = rawMessage
-    .split('\n\n')
-    .map((p) => `<p style="margin: 0 0 16px 0; color: #E8E4DF; font-size: 15px; line-height: 1.8;">${p.replace(/\n/g, '<br>')}</p>`)
-    .join('');
   const buttonText = replaceEmailVariables(config.buttonText, { name, age, currentYear: year });
   const footerText = replaceEmailVariables(config.footer || '', { name, age, currentYear: year });
 
-  return `
-<!DOCTYPE html>
-<html>
+  const paragraphs = rawMessage
+    .split('\n\n')
+    .map((p) => {
+      const highlighted = highlightLuxuryPhrases(p.replace(/\n/g, '<br>'), name);
+      return `<p style="margin: 0 0 16px 0; color: #E8E2D8; font-size: 15px; line-height: 1.85; font-family: 'Montserrat', sans-serif;">${highlighted}</p>`;
+    })
+    .join('');
+
+  return `<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${replaceEmailVariables(config.subject, { name, age, currentYear: year })}</title>
+  <title>${subject}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800;900&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap');
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    @media screen and (max-width: 600px) {
+      .email-container { width: 100% !important; border-radius: 12px !important; }
+      .email-content { padding: 24px 20px !important; }
+      .email-heading { font-size: 22px !important; }
+      .signature-name { font-size: 20px !important; letter-spacing: 5px !important; }
+      .panel-card { padding: 16px 16px !important; }
+      .panel-date { font-size: 18px !important; }
+      .cta-button { padding: 14px 28px !important; font-size: 12px !important; }
+    }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #030305; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #FAF8F5;">
-  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #030305; padding: 35px 12px;">
+<body style="margin: 0; padding: 0; background-color: #060408; font-family: 'Montserrat', sans-serif; color: #FAF8F5;">
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #060408; background-image: radial-gradient(circle at 50% 15%, #190919 0%, #060408 70%); padding: 35px 12px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background: linear-gradient(150deg, #13101C 0%, #07060A 100%); border: 1px solid #D4AF37; border-radius: 24px; overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,0.95);">
+        <!-- Main Email Frame -->
+        <table role="presentation" class="email-container" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background: linear-gradient(175deg, #180c1b 0%, #0d0610 45%, #060408 100%); border: 1px solid #C5A059; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 70px rgba(0,0,0,0.95), 0 0 35px rgba(197,160,89,0.12);">
           
           <!-- Top Header -->
           <tr>
-            <td align="center" style="padding: 40px 30px 20px 30px; border-bottom: 1px solid rgba(212,175,55,0.25);">
-              <div style="width: 54px; height: 54px; border-radius: 50%; border: 1px solid #D4AF37; line-height: 54px; text-align: center; color: #D4AF37; font-size: 22px; font-weight: bold; margin-bottom: 16px; background-color: rgba(212,175,55,0.1); box-shadow: 0 0 20px rgba(212,175,55,0.25);">
+            <td align="center" style="padding: 42px 30px 24px 30px; border-bottom: 1px solid rgba(197,160,89,0.25);">
+              <div style="width: 54px; height: 54px; border-radius: 50%; border: 1px solid #D4AF37; line-height: 54px; text-align: center; color: #F3E5AB; font-size: 22px; font-weight: bold; margin-bottom: 18px; background: radial-gradient(circle, rgba(212,175,55,0.25) 0%, rgba(212,175,55,0.05) 100%); box-shadow: 0 0 22px rgba(212,175,55,0.35);">
                 ✦
               </div>
-              <p style="margin: 0; font-size: 11px; letter-spacing: 4px; color: #D4AF37; text-transform: uppercase; font-weight: 600;">
-                ${config.topLabel || 'Midnight Cosmic Milestone · 28 September'}
+              <p style="margin: 0 0 8px 0; font-size: 11px; letter-spacing: 4.5px; color: #D4AF37; text-transform: uppercase; font-weight: 700; font-family: 'Cinzel', Georgia, serif;">
+                ${topLabel} · 28 SEPTEMBER
               </p>
-              <h1 style="margin: 14px 0 0 0; font-size: 30px; font-weight: 700; letter-spacing: 2px; color: #FAF8F5; text-transform: uppercase;">
+              <h1 class="email-heading" style="margin: 0 0 14px 0; font-size: 26px; font-weight: 700; letter-spacing: 3px; color: #FAF8F5; text-transform: uppercase; font-family: 'Cinzel', Georgia, serif; line-height: 1.3;">
                 ${heading}
               </h1>
+              <div class="signature-name" style="margin-top: 6px;">
+                ${formatGoldenSignatureName(name)}
+              </div>
             </td>
           </tr>
 
-          <!-- Dynamic Age Milestone Badge -->
+          <!-- Dynamic Age Milestone Panel -->
           <tr>
-            <td align="center" style="padding: 26px 30px 10px 30px;">
-              <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="background-color: rgba(212,175,55,0.12); border: 1px solid #D4AF37; border-radius: 50px; padding: 10px 32px;">
+            <td align="center" style="padding: 28px 32px 12px 32px;">
+              <table role="presentation" class="panel-card" border="0" cellspacing="0" cellpadding="0" style="width: 100%; background: linear-gradient(135deg, rgba(197,160,89,0.14) 0%, rgba(30,12,30,0.4) 100%); border: 1px solid #C5A059; border-radius: 16px; padding: 20px 24px; text-align: center; box-shadow: inset 0 0 25px rgba(197,160,89,0.08);">
                 <tr>
-                  <td align="center" style="color: #FFF8E7; font-size: 15px; letter-spacing: 2.5px; font-weight: 800;">
-                    WELCOME TO ${age}
+                  <td align="center">
+                    <p style="margin: 0 0 6px 0; font-size: 10.5px; letter-spacing: 3px; color: #D4AF37; text-transform: uppercase; font-weight: 700; font-family: 'Cinzel', Georgia, serif;">
+                      COSMIC SOLAR ANNIVERSARY
+                    </p>
+                    <p class="panel-date" style="margin: 0; font-size: 22px; color: #FFF8E7; font-weight: 800; letter-spacing: 3px; font-family: 'Cinzel', Georgia, serif; text-shadow: 0 0 12px rgba(255,248,231,0.3);">
+                      WELCOME TO ${age}
+                    </p>
+                    <p style="margin: 6px 0 0 0; font-size: 12px; color: #E6C687; font-style: italic; letter-spacing: 1.5px; font-family: 'Playfair Display', Georgia, serif;">
+                      28 September ${year} · 12:00 AM IST
+                    </p>
                   </td>
                 </tr>
               </table>
@@ -410,30 +429,47 @@ export function generateBirthdayMidnightEmailHtml(
 
           <!-- Message Body -->
           <tr>
-            <td style="padding: 22px 40px 28px 40px; text-align: center;">
-              ${messageHtml}
+            <td class="email-content" style="padding: 24px 44px 20px 44px; text-align: center;">
+              ${paragraphs}
             </td>
           </tr>
 
-          <!-- Button -->
+          <!-- CTA Button Section -->
           <tr>
-            <td align="center" style="padding: 10px 40px 38px 40px;">
-              <table role="presentation" border="0" cellspacing="0" cellpadding="0">
+            <td align="center" style="padding: 14px 40px 10px 40px;">
+              <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                 <tr>
-                  <td align="center" style="border-radius: 50px; background: linear-gradient(135deg, #E5CD74 0%, #D4AF37 50%, #997A26 100%); box-shadow: 0 10px 30px rgba(212,175,55,0.35);">
-                    <a href="${destinationUrl}" target="_blank" style="display: inline-block; padding: 16px 36px; font-size: 13px; font-weight: 800; letter-spacing: 2px; text-decoration: none; color: #07060A; text-transform: uppercase; border-radius: 50px;">
+                  <td align="center" style="border-radius: 50px; background: linear-gradient(135deg, #F5E6B3 0%, #D4AF37 50%, #997A26 100%); box-shadow: 0 10px 30px rgba(212,175,55,0.35);">
+                    <a href="${destinationUrl}" target="_blank" class="cta-button" style="display: inline-block; padding: 16px 36px; font-size: 13px; font-weight: 800; letter-spacing: 2px; text-decoration: none; color: #07060A; text-transform: uppercase; border-radius: 50px; font-family: 'Cinzel', Georgia, serif;">
                       ${buttonText}
                     </a>
                   </td>
                 </tr>
               </table>
+
+              <!-- Visible Configured Destination URL -->
+              <div style="margin-top: 14px; text-align: center;">
+                <a href="${destinationUrl}" target="_blank" style="color: #C5A059; font-size: 11.5px; font-family: 'Montserrat', monospace, sans-serif; text-decoration: underline; letter-spacing: 0.5px; word-break: break-all;">
+                  🔗 ${destinationUrl}
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Lower Celestial Visual Accent -->
+          <tr>
+            <td align="center" style="padding: 22px 0 12px 0; color: #8F7745; font-size: 11px; letter-spacing: 8px;">
+              ✦ &nbsp; · &nbsp; ✧ &nbsp; · &nbsp; ✦
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td align="center" style="padding: 22px 30px; background-color: #050408; border-top: 1px solid rgba(212,175,55,0.2);">
-              <p style="margin: 0; font-size: 11px; letter-spacing: 1px; color: #8F8A82; line-height: 1.6;">
+            <td align="center" style="padding: 24px 30px; background-color: #060408; border-top: 1px solid rgba(197,160,89,0.22);">
+              <p style="margin: 0 0 6px 0; font-size: 11px; letter-spacing: 2.5px; color: #C5A059; font-weight: 700; font-family: 'Cinzel', Georgia, serif; text-transform: uppercase;">
+                SIRI — A JOURNEY WRITTEN IN THE STARS
+              </p>
+              <p style="margin: 0; font-size: 11px; letter-spacing: 1px; color: #8F8A82; line-height: 1.6; font-family: 'Montserrat', sans-serif;">
                 ${footerText.replace(/\n/g, '<br>')}
               </p>
             </td>
@@ -444,73 +480,97 @@ export function generateBirthdayMidnightEmailHtml(
     </tr>
   </table>
 </body>
-</html>
-  `;
+</html>`;
 }
 
-// 4. REAL BIRTH MOMENT EMAIL HTML (08:00 AM IST, 28 September)
+// =========================================================================
+// 3. REAL BIRTH MOMENT EMAIL (08:00 AM IST, 28 September)
+// =========================================================================
 export function generateBirthMomentEmailHtml(
   customConfig?: Partial<CustomEmailTemplateConfig>,
-  contextData: { name?: string; year?: number; websiteUrl?: string; tithiDate?: string } = {}
+  contextData: { name?: string; year?: number; websiteUrl?: string; recipient?: string } = {}
 ): string {
   const config = { ...DEFAULT_EMAIL_TEMPLATES.birth_moment, ...customConfig };
   const year = contextData.year || new Date().getFullYear();
   const name = contextData.name || 'SIRI';
   const age = calculateDynamicAge(new Date(`${year}-09-28T08:00:00+05:30`));
   const websiteUrl = contextData.websiteUrl || config.websiteUrl;
-  const destinationUrl = buildDestinationUrl(websiteUrl, config.deepLinkScene);
+  const destinationUrl = buildDestinationUrl(websiteUrl, config.deepLinkScene || 'birth-moment');
 
-  const heading = replaceEmailVariables(config.heading, { name, age, currentYear: year, websiteUrl });
+  const subject = replaceEmailVariables(config.subject, { name, age, currentYear: year, websiteUrl });
+  const topLabel = replaceEmailVariables(config.topLabel || '28 SEPTEMBER · 08:00 AM IST', { name, age, currentYear: year });
+  const heading = replaceEmailVariables(config.heading || 'THE MOMENT IT ALL BEGAN', { name, age, currentYear: year });
   const rawMessage = replaceEmailVariables(config.message, { name, age, currentYear: year, websiteUrl });
-  const messageHtml = rawMessage
-    .split('\n\n')
-    .map((p) => `<p style="margin: 0 0 16px 0; color: #E8E4DF; font-size: 15px; line-height: 1.8;">${p.replace(/\n/g, '<br>')}</p>`)
-    .join('');
   const buttonText = replaceEmailVariables(config.buttonText, { name, age, currentYear: year });
   const footerText = replaceEmailVariables(config.footer || '', { name, age, currentYear: year });
 
-  return `
-<!DOCTYPE html>
-<html>
+  const paragraphs = rawMessage
+    .split('\n\n')
+    .map((p) => {
+      const highlighted = highlightLuxuryPhrases(p.replace(/\n/g, '<br>'), name);
+      return `<p style="margin: 0 0 16px 0; color: #E8E2D8; font-size: 15px; line-height: 1.85; font-family: 'Montserrat', sans-serif;">${highlighted}</p>`;
+    })
+    .join('');
+
+  return `<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${replaceEmailVariables(config.subject, { name, age, currentYear: year })}</title>
+  <title>${subject}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800;900&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap');
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    @media screen and (max-width: 600px) {
+      .email-container { width: 100% !important; border-radius: 12px !important; }
+      .email-content { padding: 24px 20px !important; }
+      .email-heading { font-size: 22px !important; }
+      .signature-name { font-size: 20px !important; letter-spacing: 5px !important; }
+      .panel-card { padding: 16px 16px !important; }
+      .panel-date { font-size: 17px !important; }
+      .cta-button { padding: 14px 28px !important; font-size: 12px !important; }
+    }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #030305; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #FAF8F5;">
-  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #030305; padding: 35px 12px;">
+<body style="margin: 0; padding: 0; background-color: #060408; font-family: 'Montserrat', sans-serif; color: #FAF8F5;">
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #060408; background-image: radial-gradient(circle at 50% 15%, #1c0e18 0%, #060408 70%); padding: 35px 12px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background: linear-gradient(150deg, #181124 0%, #08060C 100%); border: 1px solid #D4AF37; border-radius: 24px; overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,0.95);">
+        <!-- Main Email Frame -->
+        <table role="presentation" class="email-container" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background: linear-gradient(175deg, #1a0d1d 0%, #0d0610 45%, #060408 100%); border: 1px solid #C5A059; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 70px rgba(0,0,0,0.95), 0 0 35px rgba(197,160,89,0.12);">
           
           <!-- Top Header -->
           <tr>
-            <td align="center" style="padding: 40px 30px 20px 30px; border-bottom: 1px solid rgba(212,175,55,0.25);">
-              <div style="width: 54px; height: 54px; border-radius: 50%; border: 1px solid #D4AF37; line-height: 54px; text-align: center; color: #D4AF37; font-size: 22px; font-weight: bold; margin-bottom: 16px; background-color: rgba(212,175,55,0.1); box-shadow: 0 0 20px rgba(212,175,55,0.25);">
+            <td align="center" style="padding: 42px 30px 24px 30px; border-bottom: 1px solid rgba(197,160,89,0.25);">
+              <div style="width: 54px; height: 54px; border-radius: 50%; border: 1px solid #D4AF37; line-height: 54px; text-align: center; color: #F3E5AB; font-size: 22px; font-weight: bold; margin-bottom: 18px; background: radial-gradient(circle, rgba(212,175,55,0.25) 0%, rgba(212,175,55,0.05) 100%); box-shadow: 0 0 22px rgba(212,175,55,0.35);">
                 ☀️
               </div>
-              <p style="margin: 0; font-size: 11px; letter-spacing: 4px; color: #D4AF37; text-transform: uppercase; font-weight: 600;">
-                ${config.topLabel || 'Exact Moment of Birth · 08:00 AM IST'}
+              <p style="margin: 0 0 8px 0; font-size: 11px; letter-spacing: 4.5px; color: #D4AF37; text-transform: uppercase; font-weight: 700; font-family: 'Cinzel', Georgia, serif;">
+                ${topLabel}
               </p>
-              <h1 style="margin: 14px 0 0 0; font-size: 28px; font-weight: 700; letter-spacing: 2px; color: #FAF8F5; text-transform: uppercase;">
+              <h1 class="email-heading" style="margin: 0 0 14px 0; font-size: 26px; font-weight: 700; letter-spacing: 3px; color: #FAF8F5; text-transform: uppercase; font-family: 'Cinzel', Georgia, serif; line-height: 1.3;">
                 ${heading}
               </h1>
+              <div class="signature-name" style="margin-top: 6px;">
+                ${formatGoldenSignatureName(name)}
+              </div>
             </td>
           </tr>
 
-          <!-- Birth Moment Plaque -->
+          <!-- Genesis Moment Plaque -->
           <tr>
-            <td align="center" style="padding: 26px 30px 10px 30px;">
-              <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="background-color: rgba(212,175,55,0.12); border: 1px solid #D4AF37; border-radius: 16px; padding: 14px 28px; width: 100%;">
+            <td align="center" style="padding: 28px 32px 12px 32px;">
+              <table role="presentation" class="panel-card" border="0" cellspacing="0" cellpadding="0" style="width: 100%; background: linear-gradient(135deg, rgba(197,160,89,0.14) 0%, rgba(30,12,30,0.4) 100%); border: 1px solid #C5A059; border-radius: 16px; padding: 20px 24px; text-align: center; box-shadow: inset 0 0 25px rgba(197,160,89,0.08);">
                 <tr>
                   <td align="center">
-                    <p style="margin: 0 0 4px 0; font-size: 11px; letter-spacing: 2px; color: #D4AF37; text-transform: uppercase; font-weight: 600;">
-                      The Genesis Moment
+                    <p style="margin: 0 0 6px 0; font-size: 10.5px; letter-spacing: 3px; color: #D4AF37; text-transform: uppercase; font-weight: 700; font-family: 'Cinzel', Georgia, serif;">
+                      THE GENESIS MOMENT
                     </p>
-                    <p style="margin: 0; font-size: 20px; color: #FFF8E7; font-weight: bold; letter-spacing: 1.5px;">
+                    <p class="panel-date" style="margin: 0; font-size: 21px; color: #FFF8E7; font-weight: 800; letter-spacing: 2px; font-family: 'Cinzel', Georgia, serif; text-shadow: 0 0 12px rgba(255,248,231,0.3);">
                       28 SEPTEMBER 2003 · 08:00 AM
                     </p>
-                    <p style="margin: 6px 0 0 0; font-size: 12px; color: #CBB06D;">
+                    <p style="margin: 6px 0 0 0; font-size: 12px; color: #E6C687; font-style: italic; letter-spacing: 1px; font-family: 'Playfair Display', Georgia, serif;">
                       Kakinada, Andhra Pradesh · Tula Rashi · Swati (1st Pada)
                     </p>
                   </td>
@@ -521,30 +581,47 @@ export function generateBirthMomentEmailHtml(
 
           <!-- Message Body -->
           <tr>
-            <td style="padding: 22px 40px 28px 40px; text-align: center;">
-              ${messageHtml}
+            <td class="email-content" style="padding: 24px 44px 20px 44px; text-align: center;">
+              ${paragraphs}
             </td>
           </tr>
 
-          <!-- Button -->
+          <!-- CTA Button Section -->
           <tr>
-            <td align="center" style="padding: 10px 40px 38px 40px;">
-              <table role="presentation" border="0" cellspacing="0" cellpadding="0">
+            <td align="center" style="padding: 14px 40px 10px 40px;">
+              <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                 <tr>
-                  <td align="center" style="border-radius: 50px; background: linear-gradient(135deg, #E5CD74 0%, #D4AF37 50%, #997A26 100%); box-shadow: 0 10px 30px rgba(212,175,55,0.35);">
-                    <a href="${destinationUrl}" target="_blank" style="display: inline-block; padding: 16px 36px; font-size: 13px; font-weight: 800; letter-spacing: 2px; text-decoration: none; color: #07060A; text-transform: uppercase; border-radius: 50px;">
+                  <td align="center" style="border-radius: 50px; background: linear-gradient(135deg, #F5E6B3 0%, #D4AF37 50%, #997A26 100%); box-shadow: 0 10px 30px rgba(212,175,55,0.35);">
+                    <a href="${destinationUrl}" target="_blank" class="cta-button" style="display: inline-block; padding: 16px 36px; font-size: 13px; font-weight: 800; letter-spacing: 2px; text-decoration: none; color: #07060A; text-transform: uppercase; border-radius: 50px; font-family: 'Cinzel', Georgia, serif;">
                       ${buttonText}
                     </a>
                   </td>
                 </tr>
               </table>
+
+              <!-- Visible Configured Destination URL -->
+              <div style="margin-top: 14px; text-align: center;">
+                <a href="${destinationUrl}" target="_blank" style="color: #C5A059; font-size: 11.5px; font-family: 'Montserrat', monospace, sans-serif; text-decoration: underline; letter-spacing: 0.5px; word-break: break-all;">
+                  🔗 ${destinationUrl}
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Lower Celestial Visual Accent -->
+          <tr>
+            <td align="center" style="padding: 22px 0 12px 0; color: #8F7745; font-size: 11px; letter-spacing: 8px;">
+              ✦ &nbsp; · &nbsp; ✧ &nbsp; · &nbsp; ✦
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td align="center" style="padding: 22px 30px; background-color: #050408; border-top: 1px solid rgba(212,175,55,0.2);">
-              <p style="margin: 0; font-size: 11px; letter-spacing: 1px; color: #8F8A82; line-height: 1.6;">
+            <td align="center" style="padding: 24px 30px; background-color: #060408; border-top: 1px solid rgba(197,160,89,0.22);">
+              <p style="margin: 0 0 6px 0; font-size: 11px; letter-spacing: 2.5px; color: #C5A059; font-weight: 700; font-family: 'Cinzel', Georgia, serif; text-transform: uppercase;">
+                SIRI — A JOURNEY WRITTEN IN THE STARS
+              </p>
+              <p style="margin: 0; font-size: 11px; letter-spacing: 1px; color: #8F8A82; line-height: 1.6; font-family: 'Montserrat', sans-serif;">
                 ${footerText.replace(/\n/g, '<br>')}
               </p>
             </td>
@@ -555,74 +632,98 @@ export function generateBirthMomentEmailHtml(
     </tr>
   </table>
 </body>
-</html>
-  `;
+</html>`;
 }
 
-// 5. REAL TITHI EMAIL HTML (08:00 AM IST on published Tithi date)
+// =========================================================================
+// 4. REAL LUNAR TITHI EMAIL (08:00 AM IST on published Tithi date)
+// =========================================================================
 export function generateTithiEmailHtml(
   customConfig?: Partial<CustomEmailTemplateConfig>,
-  contextData: { name?: string; year?: number; websiteUrl?: string; tithiDate?: string } = {}
+  contextData: { name?: string; year?: number; websiteUrl?: string; tithiDate?: string; recipient?: string } = {}
 ): string {
   const config = { ...DEFAULT_EMAIL_TEMPLATES.tithi, ...customConfig };
   const year = contextData.year || new Date().getFullYear();
-  const name = contextData.name || 'SIRI';
+  const name = contextData.name || 'SIRI NANNAA';
   const tithiDate = contextData.tithiDate || '14 October';
   const websiteUrl = contextData.websiteUrl || config.websiteUrl;
-  const destinationUrl = buildDestinationUrl(websiteUrl, config.deepLinkScene);
+  const destinationUrl = buildDestinationUrl(websiteUrl, config.deepLinkScene || 'tithi');
 
-  const heading = replaceEmailVariables(config.heading, { name, currentYear: year, tithiDate, websiteUrl });
+  const subject = replaceEmailVariables(config.subject, { name, currentYear: year, tithiDate, websiteUrl });
+  const topLabel = replaceEmailVariables(config.topLabel || `SACRED LUNAR RETURN · ${year}`, { name, currentYear: year, tithiDate });
+  const heading = replaceEmailVariables(config.heading || 'A DIVINE BIRTHDAY BLESSING', { name, currentYear: year, tithiDate });
   const rawMessage = replaceEmailVariables(config.message, { name, currentYear: year, tithiDate, websiteUrl });
-  const messageHtml = rawMessage
-    .split('\n\n')
-    .map((p) => `<p style="margin: 0 0 16px 0; color: #E8E4DF; font-size: 15px; line-height: 1.8;">${p.replace(/\n/g, '<br>')}</p>`)
-    .join('');
   const buttonText = replaceEmailVariables(config.buttonText, { name, currentYear: year, tithiDate });
   const footerText = replaceEmailVariables(config.footer || '', { name, currentYear: year, tithiDate });
 
-  return `
-<!DOCTYPE html>
-<html>
+  const paragraphs = rawMessage
+    .split('\n\n')
+    .map((p) => {
+      const highlighted = highlightLuxuryPhrases(p.replace(/\n/g, '<br>'), name);
+      return `<p style="margin: 0 0 16px 0; color: #E8E2D8; font-size: 15px; line-height: 1.85; font-family: 'Montserrat', sans-serif;">${highlighted}</p>`;
+    })
+    .join('');
+
+  return `<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${replaceEmailVariables(config.subject, { name, currentYear: year, tithiDate })}</title>
+  <title>${subject}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800;900&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap');
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    @media screen and (max-width: 600px) {
+      .email-container { width: 100% !important; border-radius: 12px !important; }
+      .email-content { padding: 24px 20px !important; }
+      .email-heading { font-size: 22px !important; }
+      .signature-name { font-size: 20px !important; letter-spacing: 5px !important; }
+      .panel-card { padding: 16px 16px !important; }
+      .panel-date { font-size: 20px !important; }
+      .cta-button { padding: 14px 28px !important; font-size: 12px !important; }
+    }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #030305; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #FAF8F5;">
-  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #030305; padding: 35px 12px;">
+<body style="margin: 0; padding: 0; background-color: #060408; font-family: 'Montserrat', sans-serif; color: #FAF8F5;">
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #060408; background-image: radial-gradient(circle at 50% 15%, #220716 0%, #060408 70%); padding: 35px 12px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background: linear-gradient(150deg, #1F0712 0%, #0A0307 100%); border: 1px solid #D4AF37; border-radius: 24px; overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,0.95);">
+        <!-- Main Email Frame -->
+        <table role="presentation" class="email-container" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background: linear-gradient(175deg, #1e0915 0%, #0e050c 45%, #060408 100%); border: 1px solid #C5A059; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 70px rgba(0,0,0,0.95), 0 0 35px rgba(197,160,89,0.12);">
           
-          <!-- Top Header -->
+          <!-- Sacred Om Emblem & Header -->
           <tr>
-            <td align="center" style="padding: 40px 30px 20px 30px; border-bottom: 1px solid rgba(212,175,55,0.25);">
-              <div style="width: 54px; height: 54px; border-radius: 50%; border: 1px solid #D4AF37; line-height: 54px; text-align: center; color: #D4AF37; font-size: 22px; font-weight: bold; margin-bottom: 16px; background-color: rgba(212,175,55,0.12); box-shadow: 0 0 20px rgba(212,175,55,0.3);">
+            <td align="center" style="padding: 42px 30px 24px 30px; border-bottom: 1px solid rgba(197,160,89,0.25);">
+              <div style="width: 58px; height: 58px; border-radius: 50%; border: 1px solid #D4AF37; line-height: 58px; text-align: center; color: #F3E5AB; font-size: 25px; font-weight: bold; margin-bottom: 18px; background: radial-gradient(circle, rgba(212,175,55,0.25) 0%, rgba(212,175,55,0.06) 100%); box-shadow: 0 0 25px rgba(212,175,55,0.4);">
                 ॐ
               </div>
-              <p style="margin: 0; font-size: 11px; letter-spacing: 4px; color: #D4AF37; text-transform: uppercase; font-weight: 600;">
-                ${config.topLabel || 'Sacred Lunar Return · Sharan Navaratri'}
+              <p style="margin: 0 0 8px 0; font-size: 11px; letter-spacing: 4.5px; color: #D4AF37; text-transform: uppercase; font-weight: 700; font-family: 'Cinzel', Georgia, serif;">
+                ${topLabel}
               </p>
-              <h1 style="margin: 14px 0 0 0; font-size: 28px; font-weight: 700; letter-spacing: 2px; color: #FAF8F5; text-transform: uppercase;">
+              <h1 class="email-heading" style="margin: 0 0 14px 0; font-size: 26px; font-weight: 700; letter-spacing: 3px; color: #FAF8F5; text-transform: uppercase; font-family: 'Cinzel', Georgia, serif; line-height: 1.3;">
                 ${heading}
               </h1>
+              <div class="signature-name" style="margin-top: 6px;">
+                ${formatGoldenSignatureName(name)}
+              </div>
             </td>
           </tr>
 
-          <!-- Sacred Tithi Plaque -->
+          <!-- Sacred Tithi Panel (Exact Reference Design Matching) -->
           <tr>
-            <td align="center" style="padding: 26px 30px 10px 30px;">
-              <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="background-color: rgba(212,175,55,0.14); border: 1px solid #D4AF37; border-radius: 16px; padding: 14px 28px; width: 100%;">
+            <td align="center" style="padding: 28px 32px 12px 32px;">
+              <table role="presentation" class="panel-card" border="0" cellspacing="0" cellpadding="0" style="width: 100%; background: linear-gradient(135deg, rgba(197,160,89,0.15) 0%, rgba(40,10,25,0.4) 100%); border: 1px solid #C5A059; border-radius: 16px; padding: 22px 24px; text-align: center; box-shadow: inset 0 0 25px rgba(197,160,89,0.08);">
                 <tr>
                   <td align="center">
-                    <p style="margin: 0 0 4px 0; font-size: 11px; letter-spacing: 2px; color: #D4AF37; text-transform: uppercase; font-weight: 600;">
-                      Sacred Tithi Alignment
+                    <p style="margin: 0 0 6px 0; font-size: 11px; letter-spacing: 3.5px; color: #D4AF37; text-transform: uppercase; font-weight: 700; font-family: 'Cinzel', Georgia, serif;">
+                      THIS YEAR'S LUNAR TITHI
                     </p>
-                    <p style="margin: 0; font-size: 20px; color: #FFF8E7; font-weight: bold; letter-spacing: 1.5px;">
-                      Ashwayuja Shukla Tritiya
+                    <p class="panel-date" style="margin: 0; font-size: 24px; color: #FFF8E7; font-weight: 800; letter-spacing: 2px; font-family: 'Cinzel', Georgia, serif; text-shadow: 0 0 14px rgba(255,248,231,0.35);">
+                      ${tithiDate.toUpperCase()} ${year}
                     </p>
-                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #F3E5AB;">
-                      ${tithiDate.toUpperCase()} ${year} · 08:00 AM IST
+                    <p style="margin: 6px 0 0 0; font-size: 13.5px; color: #F3E5AB; font-style: italic; letter-spacing: 1.5px; font-family: 'Playfair Display', Georgia, serif;">
+                      Ashwayuja Shukla Tritiya (आश्वयुज शुक्ल तृतीया)
                     </p>
                   </td>
                 </tr>
@@ -632,30 +733,60 @@ export function generateTithiEmailHtml(
 
           <!-- Message Body -->
           <tr>
-            <td style="padding: 22px 40px 28px 40px; text-align: center;">
-              ${messageHtml}
+            <td class="email-content" style="padding: 24px 44px 20px 44px; text-align: center;">
+              ${paragraphs}
             </td>
           </tr>
 
-          <!-- Button -->
+          <!-- Lower Sacred Banner -->
           <tr>
-            <td align="center" style="padding: 10px 40px 38px 40px;">
-              <table role="presentation" border="0" cellspacing="0" cellpadding="0">
+            <td align="center" style="padding: 10px 32px 20px 32px;">
+              <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="width: 100%; background-color: rgba(212,175,55,0.08); border-top: 1px solid rgba(212,175,55,0.3); border-bottom: 1px solid rgba(212,175,55,0.3); padding: 12px 20px;">
                 <tr>
-                  <td align="center" style="border-radius: 50px; background: linear-gradient(135deg, #E5CD74 0%, #D4AF37 50%, #997A26 100%); box-shadow: 0 10px 30px rgba(212,175,55,0.35);">
-                    <a href="${destinationUrl}" target="_blank" style="display: inline-block; padding: 16px 36px; font-size: 13px; font-weight: 800; letter-spacing: 2px; text-decoration: none; color: #07060A; text-transform: uppercase; border-radius: 50px;">
-                      ${buttonText}
-                    </a>
+                  <td align="center" style="color: #D4AF37; font-size: 10.5px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; font-family: 'Cinzel', Georgia, serif;">
+                    BORN UNDER THE DIVINE BLESSINGS OF SHARAN NAVARATRI
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
+          <!-- CTA Button Section -->
+          <tr>
+            <td align="center" style="padding: 6px 40px 10px 40px;">
+              <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
+                <tr>
+                  <td align="center" style="border-radius: 50px; background: linear-gradient(135deg, #F5E6B3 0%, #D4AF37 50%, #997A26 100%); box-shadow: 0 10px 30px rgba(212,175,55,0.35);">
+                    <a href="${destinationUrl}" target="_blank" class="cta-button" style="display: inline-block; padding: 16px 36px; font-size: 13px; font-weight: 800; letter-spacing: 2px; text-decoration: none; color: #07060A; text-transform: uppercase; border-radius: 50px; font-family: 'Cinzel', Georgia, serif;">
+                      ${buttonText}
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Visible Configured Destination URL -->
+              <div style="margin-top: 14px; text-align: center;">
+                <a href="${destinationUrl}" target="_blank" style="color: #C5A059; font-size: 11.5px; font-family: 'Montserrat', monospace, sans-serif; text-decoration: underline; letter-spacing: 0.5px; word-break: break-all;">
+                  🔗 ${destinationUrl}
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Lower Celestial Visual Accent -->
+          <tr>
+            <td align="center" style="padding: 22px 0 12px 0; color: #8F7745; font-size: 11px; letter-spacing: 8px;">
+              ✦ &nbsp; · &nbsp; ✧ &nbsp; · &nbsp; ✦
+            </td>
+          </tr>
+
           <!-- Footer -->
           <tr>
-            <td align="center" style="padding: 22px 30px; background-color: #050408; border-top: 1px solid rgba(212,175,55,0.2);">
-              <p style="margin: 0; font-size: 11px; letter-spacing: 1px; color: #8F8A82; line-height: 1.6;">
+            <td align="center" style="padding: 24px 30px; background-color: #060408; border-top: 1px solid rgba(197,160,89,0.22);">
+              <p style="margin: 0 0 6px 0; font-size: 11px; letter-spacing: 2.5px; color: #C5A059; font-weight: 700; font-family: 'Cinzel', Georgia, serif; text-transform: uppercase;">
+                SIRI · SHARAN NAVARATRI LUNAR ANNIVERSARY
+              </p>
+              <p style="margin: 0; font-size: 11px; letter-spacing: 1px; color: #8F8A82; line-height: 1.6; font-family: 'Montserrat', sans-serif;">
                 ${footerText.replace(/\n/g, '<br>')}
               </p>
             </td>
@@ -666,6 +797,160 @@ export function generateTithiEmailHtml(
     </tr>
   </table>
 </body>
-</html>
-  `;
+</html>`;
+}
+
+// =========================================================================
+// 5. TEST VERIFICATION EMAIL (System Verification Dispatch)
+// =========================================================================
+export function generateTestEmailHtml(
+  customConfig?: Partial<CustomEmailTemplateConfig>,
+  contextData: { name?: string; year?: number; websiteUrl?: string; recipient?: string; tithiDate?: string } = {}
+): string {
+  const config = { ...DEFAULT_EMAIL_TEMPLATES.test, ...customConfig };
+  const year = contextData.year || new Date().getFullYear();
+  const name = contextData.name || 'SIRI';
+  const recipient = contextData.recipient || 'siri@example.com';
+  const websiteUrl = contextData.websiteUrl || config.websiteUrl;
+  const destinationUrl = buildDestinationUrl(websiteUrl, config.deepLinkScene);
+  const sentAt = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) + ' IST';
+
+  const subject = replaceEmailVariables(config.subject, { name, currentYear: year, recipient, sentAt, websiteUrl });
+  const topLabel = replaceEmailVariables(config.topLabel || 'SYSTEM VERIFICATION DISPATCH', { name, currentYear: year });
+  const heading = replaceEmailVariables(config.heading || 'EMAIL AUTOMATION LIVE TEST', { name, currentYear: year });
+  const rawMessage = replaceEmailVariables(config.message, { name, currentYear: year, recipient, sentAt, websiteUrl });
+  const buttonText = replaceEmailVariables(config.buttonText, { name, currentYear: year });
+  const footerText = replaceEmailVariables(config.footer || '', { name, currentYear: year });
+
+  const paragraphs = rawMessage
+    .split('\n\n')
+    .map((p) => {
+      const highlighted = highlightLuxuryPhrases(p.replace(/\n/g, '<br>'), name);
+      return `<p style="margin: 0 0 16px 0; color: #E8E2D8; font-size: 15px; line-height: 1.85; font-family: 'Montserrat', sans-serif;">${highlighted}</p>`;
+    })
+    .join('');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${subject}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800;900&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap');
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    @media screen and (max-width: 600px) {
+      .email-container { width: 100% !important; border-radius: 12px !important; }
+      .email-content { padding: 24px 20px !important; }
+      .email-heading { font-size: 22px !important; }
+      .signature-name { font-size: 20px !important; letter-spacing: 5px !important; }
+      .panel-card { padding: 16px 16px !important; }
+      .cta-button { padding: 14px 28px !important; font-size: 12px !important; }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #060408; font-family: 'Montserrat', sans-serif; color: #FAF8F5;">
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #060408; background-image: radial-gradient(circle at 50% 15%, #180c1b 0%, #060408 70%); padding: 35px 12px;">
+    <tr>
+      <td align="center">
+        <!-- Main Email Frame -->
+        <table role="presentation" class="email-container" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background: linear-gradient(175deg, #170b1a 0%, #0d0610 45%, #060408 100%); border: 1px solid #C5A059; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 70px rgba(0,0,0,0.95), 0 0 35px rgba(197,160,89,0.12);">
+          
+          <!-- Top Header -->
+          <tr>
+            <td align="center" style="padding: 42px 30px 24px 30px; border-bottom: 1px solid rgba(197,160,89,0.25);">
+              <div style="width: 54px; height: 54px; border-radius: 50%; border: 1px solid #D4AF37; line-height: 54px; text-align: center; color: #F3E5AB; font-size: 22px; font-weight: bold; margin-bottom: 18px; background: radial-gradient(circle, rgba(212,175,55,0.25) 0%, rgba(212,175,55,0.05) 100%); box-shadow: 0 0 22px rgba(212,175,55,0.35);">
+                🧪
+              </div>
+              <p style="margin: 0 0 8px 0; font-size: 11px; letter-spacing: 4.5px; color: #D4AF37; text-transform: uppercase; font-weight: 700; font-family: 'Cinzel', Georgia, serif;">
+                ${topLabel}
+              </p>
+              <h1 class="email-heading" style="margin: 0 0 14px 0; font-size: 26px; font-weight: 700; letter-spacing: 3px; color: #FAF8F5; text-transform: uppercase; font-family: 'Cinzel', Georgia, serif; line-height: 1.3;">
+                ${heading}
+              </h1>
+              <div class="signature-name" style="margin-top: 6px;">
+                ${formatGoldenSignatureName(name)}
+              </div>
+            </td>
+          </tr>
+
+          <!-- System Status Details Table -->
+          <tr>
+            <td align="center" style="padding: 28px 32px 12px 32px;">
+              <table role="presentation" class="panel-card" border="0" cellspacing="0" cellpadding="0" style="width: 100%; background: linear-gradient(135deg, rgba(197,160,89,0.12) 0%, rgba(30,12,30,0.4) 100%); border: 1px solid #C5A059; border-radius: 16px; padding: 18px 24px; text-align: left; box-shadow: inset 0 0 25px rgba(197,160,89,0.06);">
+                <tr>
+                  <td style="color: #D4AF37; font-size: 11.5px; font-weight: 700; padding: 5px 0; font-family: 'Cinzel', serif;">STATUS:</td>
+                  <td style="color: #6EE7B7; font-size: 11.5px; font-weight: 800; padding: 5px 0; text-align: right; font-family: 'Montserrat', sans-serif;">ALL SYSTEMS OPERATIONAL ✓</td>
+                </tr>
+                <tr>
+                  <td style="color: #D4AF37; font-size: 11.5px; font-weight: 700; padding: 5px 0; font-family: 'Cinzel', serif;">RECIPIENT:</td>
+                  <td style="color: #FAF8F5; font-size: 11.5px; padding: 5px 0; text-align: right; font-family: 'Montserrat', monospace, sans-serif;">${recipient}</td>
+                </tr>
+                <tr>
+                  <td style="color: #D4AF37; font-size: 11.5px; font-weight: 700; padding: 5px 0; font-family: 'Cinzel', serif;">TIMESTAMP (IST):</td>
+                  <td style="color: #FAF8F5; font-size: 11.5px; padding: 5px 0; text-align: right; font-family: 'Montserrat', sans-serif;">${sentAt}</td>
+                </tr>
+                <tr>
+                  <td style="color: #D4AF37; font-size: 11.5px; font-weight: 700; padding: 5px 0; font-family: 'Cinzel', serif;">TEMPLATE ENGINE:</td>
+                  <td style="color: #F3E5AB; font-size: 11.5px; font-weight: 600; padding: 5px 0; text-align: right; font-family: 'Montserrat', sans-serif;">Luxury Celestial Edition v2.5</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Message Body -->
+          <tr>
+            <td class="email-content" style="padding: 24px 44px 20px 44px; text-align: center;">
+              ${paragraphs}
+            </td>
+          </tr>
+
+          <!-- CTA Button Section -->
+          <tr>
+            <td align="center" style="padding: 14px 40px 10px 40px;">
+              <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
+                <tr>
+                  <td align="center" style="border-radius: 50px; background: linear-gradient(135deg, #F5E6B3 0%, #D4AF37 50%, #997A26 100%); box-shadow: 0 10px 30px rgba(212,175,55,0.35);">
+                    <a href="${destinationUrl}" target="_blank" class="cta-button" style="display: inline-block; padding: 16px 36px; font-size: 13px; font-weight: 800; letter-spacing: 2px; text-decoration: none; color: #07060A; text-transform: uppercase; border-radius: 50px; font-family: 'Cinzel', Georgia, serif;">
+                      ${buttonText}
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Visible Configured Destination URL -->
+              <div style="margin-top: 14px; text-align: center;">
+                <a href="${destinationUrl}" target="_blank" style="color: #C5A059; font-size: 11.5px; font-family: 'Montserrat', monospace, sans-serif; text-decoration: underline; letter-spacing: 0.5px; word-break: break-all;">
+                  🔗 ${destinationUrl}
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Lower Celestial Visual Accent -->
+          <tr>
+            <td align="center" style="padding: 22px 0 12px 0; color: #8F7745; font-size: 11px; letter-spacing: 8px;">
+              ✦ &nbsp; · &nbsp; ✧ &nbsp; · &nbsp; ✦
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding: 24px 30px; background-color: #060408; border-top: 1px solid rgba(197,160,89,0.22);">
+              <p style="margin: 0 0 6px 0; font-size: 11px; letter-spacing: 2.5px; color: #C5A059; font-weight: 700; font-family: 'Cinzel', Georgia, serif; text-transform: uppercase;">
+                SIRI — A JOURNEY WRITTEN IN THE STARS
+              </p>
+              <p style="margin: 0; font-size: 11px; letter-spacing: 1px; color: #8F8A82; line-height: 1.6; font-family: 'Montserrat', sans-serif;">
+                ${footerText.replace(/\n/g, '<br>')}
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 }
