@@ -1,15 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { RotateCcw, Mail } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import { BIRTH_DETAILS } from '../../data/timelineData';
 
 interface SceneProps {
   isActive: boolean;
   onReplay?: () => void;
-  onOpenEmailModal?: () => void;
+  onOpenAdmin?: () => void;
 }
 
-export const Scene12FinalEnding: React.FC<SceneProps> = ({ isActive, onReplay, onOpenEmailModal }) => {
+export const Scene12FinalEnding: React.FC<SceneProps> = ({ isActive, onReplay, onOpenAdmin }) => {
   return (
     <section className="relative w-full min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden bg-obsidian-950">
       {/* Lone Golden Star Ascending */}
@@ -59,7 +59,7 @@ export const Scene12FinalEnding: React.FC<SceneProps> = ({ isActive, onReplay, o
           </p>
         </motion.div>
 
-        {/* Ending Actions: Replay Journey & Email Automation Dashboard */}
+        {/* Ending Actions: Replay Journey */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={isActive ? { opacity: 1 } : { opacity: 0 }}
@@ -75,12 +75,12 @@ export const Scene12FinalEnding: React.FC<SceneProps> = ({ isActive, onReplay, o
             </button>
           )}
 
-          {onOpenEmailModal && (
+          {onOpenAdmin && (
             <button
-              onClick={onOpenEmailModal}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-gold-600 to-amber-700 hover:from-gold-500 hover:to-amber-600 text-obsidian-950 font-bold text-xs font-cinzel tracking-widest uppercase transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.3)]"
+              onClick={onOpenAdmin}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-obsidian-900 border border-gold-500/30 hover:border-gold-400 text-gold-400 hover:text-white text-xs font-cinzel tracking-widest uppercase transition-all duration-300 hover:bg-gold-500/10"
             >
-              <Mail className="w-3.5 h-3.5" /> Email Automation System
+              Admin Portal
             </button>
           )}
         </motion.div>

@@ -5,7 +5,6 @@ import {
   Pause,
   Volume2,
   VolumeX,
-  Mail,
   SkipForward,
   SkipBack,
   Compass,
@@ -22,7 +21,6 @@ interface FilmControllerProps {
   isPlayingFilm: boolean;
   onTogglePlay: () => void;
   onSelectScene: (index: number) => void;
-  onOpenEmailModal: () => void;
   onOpenAdminPanel: () => void;
 }
 
@@ -47,7 +45,6 @@ export const FilmController: React.FC<FilmControllerProps> = ({
   isPlayingFilm,
   onTogglePlay,
   onSelectScene,
-  onOpenEmailModal,
   onOpenAdminPanel,
 }) => {
   const [isMuted, setIsMuted] = useState(true);
@@ -278,31 +275,7 @@ export const FilmController: React.FC<FilmControllerProps> = ({
                   </motion.div>
                 )}
 
-                {/* 3. Email Automation Hub */}
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    onOpenEmailModal();
-                  }}
-                  className="w-full p-3 rounded-2xl bg-obsidian-900/90 hover:bg-gold-500/10 border border-gold-500/20 hover:border-gold-400/50 flex items-center justify-between transition-all duration-200 group text-left"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-gold-500/10 text-gold-300 group-hover:bg-gold-500/20 transition-colors">
-                      <Mail className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <span className="font-cinzel text-xs font-semibold text-white block">
-                        Email Automation
-                      </span>
-                      <span className="text-[10px] text-gray-400 font-outfit">
-                        Dual Birthday & Tithi Wishes
-                      </span>
-                    </div>
-                  </div>
-                  <span className="text-[11px] text-gold-400 font-cinzel">➔</span>
-                </button>
-
-                {/* 4. Admin Portal */}
+                {/* 3. Admin Portal */}
                 <button
                   onClick={() => {
                     setIsMenuOpen(false);
@@ -319,7 +292,7 @@ export const FilmController: React.FC<FilmControllerProps> = ({
                         Admin Portal
                       </span>
                       <span className="text-[10px] text-gray-400 font-outfit">
-                        Manage Living Tithi Dates
+                        Manage Living Tithi Dates & Automation
                       </span>
                     </div>
                   </div>

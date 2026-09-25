@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { CelestialBackground } from './components/CelestialBackground';
 import { FilmController } from './components/FilmController';
-import { EmailDashboardModal } from './components/EmailDashboardModal';
 import { AdminPanel } from './components/admin/AdminPanel';
 import { CountdownLockScreen } from './components/CountdownLockScreen';
 import { WelcomeAgeModal } from './components/WelcomeAgeModal';
@@ -30,7 +29,6 @@ export const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<'film' | 'admin'>('film');
   const [currentScene, setCurrentScene] = useState(0);
   const [isPlayingFilm, setIsPlayingFilm] = useState(false);
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const totalScenes = 12;
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -53,6 +51,33 @@ export const App: React.FC = () => {
     }
   }, []);
 
+  // Handle countdown unlock (real or preview)
+  const handleUnlockExperience = (isPreview: boolean) => {
+    setIsPreviewMode(isPreview);
+    setShowWelcomeScreen(true);
+    setIsUnlocked(true);
+  };
+
+  const handleSelectScene = useCallback((index: number) => {
+    const clampedIndex = Math.max(0, Math.min(totalScenes - 1, index));
+    setCurrentScene(clampedIndex);
+    audioEngine.playSceneTransitionSound(clampedIndex);
+
+    // Smooth scroll into view
+    const targetEl = sectionRefs.current[clampedIndex];
+    if (targetEl) {
+      targetEl.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [totalScenes]);
+
+  const handleFinishWelcome = () => {
+    setShowWelcomeScreen(false);
+    handleSelectScene(0); // Start at Scene 1
+  };
+
+  // Scene pacing for automatic film playback (in seconds per scene)
+  const sceneDurations = [7, 6.5, 7.5, 8, 8, 7.5, 8, 9, 6.5, 7, 8, 8];
+
   useEffect(() => {
     fetchPublishedTimeline();
 
@@ -71,38 +96,45 @@ export const App: React.FC = () => {
     window.addEventListener('popstate', checkRoute);
     window.addEventListener('hashchange', checkRoute);
 
+    // Deep-linking from email buttons (?scene=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    const sceneParam = urlParams.get('scene');
+    if (sceneParam) {
+      const sceneMap: Record<string, number> = {
+        'void': 0,
+        'birth-moment': 1,
+        'birth': 1,
+        'name': 2,
+        'name-reveal': 2,
+        'astrology': 3,
+        'divine': 4,
+        'navaratri': 4,
+        'two-dates': 5,
+        'birthday': 6,
+        'current-year': 6,
+        'timeline': 7,
+        'centennial': 8,
+        'tithi': 9,
+        'return-of-tithi': 9,
+        'wish': 10,
+        'final': 11,
+      };
+
+      const targetIdx = sceneMap[sceneParam.toLowerCase()] ?? (!isNaN(Number(sceneParam)) ? Number(sceneParam) : null);
+      if (targetIdx !== null && targetIdx >= 0 && targetIdx < totalScenes) {
+        setIsUnlocked(true);
+        setTimeout(() => {
+          handleSelectScene(targetIdx);
+        }, 600);
+      }
+    }
+
     return () => {
       window.removeEventListener('popstate', checkRoute);
       window.removeEventListener('hashchange', checkRoute);
     };
-  }, [fetchPublishedTimeline]);
+  }, [fetchPublishedTimeline, handleSelectScene, totalScenes]);
 
-  // Handle countdown unlock (real or preview)
-  const handleUnlockExperience = (isPreview: boolean) => {
-    setIsPreviewMode(isPreview);
-    setShowWelcomeScreen(true);
-    setIsUnlocked(true);
-  };
-
-  const handleFinishWelcome = () => {
-    setShowWelcomeScreen(false);
-    handleSelectScene(0); // Start at Scene 1
-  };
-
-  // Scene pacing for automatic film playback (in seconds per scene)
-  const sceneDurations = [7, 6.5, 7.5, 8, 8, 7.5, 8, 9, 6.5, 7, 8, 8];
-
-  const handleSelectScene = useCallback((index: number) => {
-    const clampedIndex = Math.max(0, Math.min(totalScenes - 1, index));
-    setCurrentScene(clampedIndex);
-    audioEngine.playSceneTransitionSound(clampedIndex);
-
-    // Smooth scroll into view
-    const targetEl = sectionRefs.current[clampedIndex];
-    if (targetEl) {
-      targetEl.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [totalScenes]);
 
   // Handle automatic film autoplay timer
   useEffect(() => {
@@ -118,12 +150,10 @@ export const App: React.FC = () => {
       }, durationMs);
     }
     return () => clearTimeout(timer);
-  }, [isPlayingFilm, currentScene, totalScenes, sceneDurations, handleSelectScene, currentView, isUnlocked, showWelcomeScreen]);
-
-  // Handle Keyboard Navigation (Arrow Keys / Space)
+  }, [isPlayingFilm, currentScene, totalScenes, sceneDurations, handleSelectScene, currentView, isUnlocked, showWelcomeScreen]);  // Handle Keyboard Navigation (Arrow Keys / Space)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isEmailModalOpen || currentView === 'admin' || !isUnlocked || showWelcomeScreen) return;
+      if (currentView === 'admin' || !isUnlocked || showWelcomeScreen) return;
       if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
         e.preventDefault();
         handleSelectScene(currentScene + 1);
@@ -134,7 +164,7 @@ export const App: React.FC = () => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentScene, isEmailModalOpen, handleSelectScene, currentView, isUnlocked, showWelcomeScreen]);
+  }, [currentScene, handleSelectScene, currentView, isUnlocked, showWelcomeScreen]);
 
   // Intersection Observer for scroll tracking
   useEffect(() => {
@@ -213,7 +243,6 @@ export const App: React.FC = () => {
         isPlayingFilm={isPlayingFilm}
         onTogglePlay={() => setIsPlayingFilm(!isPlayingFilm)}
         onSelectScene={handleSelectScene}
-        onOpenEmailModal={() => setIsEmailModalOpen(true)}
         onOpenAdminPanel={handleOpenAdmin}
       />
 
@@ -339,17 +368,10 @@ export const App: React.FC = () => {
           <Scene12FinalEnding
             isActive={currentScene === 11}
             onReplay={() => handleSelectScene(0)}
-            onOpenEmailModal={() => setIsEmailModalOpen(true)}
+            onOpenAdmin={handleOpenAdmin}
           />
         </div>
       </main>
-
-      {/* Email Automation System & Live Preview Modal */}
-      <EmailDashboardModal
-        isOpen={isEmailModalOpen}
-        onClose={() => setIsEmailModalOpen(false)}
-        timelineEntries={timelineEntries}
-      />
     </div>
   );
 };

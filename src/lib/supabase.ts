@@ -31,7 +31,8 @@ export interface TithiDateRecord {
 export interface EmailLogRecord {
   id: string;
   year: number;
-  event_type: 'birthday' | 'tithi' | 'test';
+  event_type: 'birthday_midnight' | 'birth_moment' | 'tithi' | 'test' | 'birthday';
+  mode?: 'test' | 'real';
   scheduled_date: string;
   recipient: string;
   sent_at: string;
