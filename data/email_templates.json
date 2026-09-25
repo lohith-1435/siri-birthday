@@ -17,7 +17,7 @@
     "message": "Some days arrive on a calendar.\n\nSome days carry a meaning of their own.\n\nYours is one of those days.\n\nBefore the day arrives, we simply wanted to leave you a little message…\n\nAdvance Happy Birthday, SIRI. ❤️\n\nMay the year ahead bring you moments that make you smile,\npeople who value you,\nand memories that stay close to your heart.\n\nYour story has already come a long way.\n\nAnd there is still so much more to be written.",
     "buttonText": "STEP INTO YOUR STORY →",
     "websiteUrl": "https://siri-birthday-brown.vercel.app/",
-    "deepLinkScene": "birthday",
+    "deepLinkScene": "",
     "footer": "SIRI — A JOURNEY WRITTEN IN THE STARS\nA small experience created with love, admiration and respect.",
     "enabled": true
   },
@@ -28,7 +28,7 @@
     "message": "Today isn't just another date.\n\nIt's the day your story began.\n\nHappy Birthday, SIRI. ❤️\n\nMay this new chapter bring beautiful moments,\nmeaningful journeys,\nand memories worth keeping forever.",
     "buttonText": "ENTER YOUR STORY →",
     "websiteUrl": "https://siri-birthday-brown.vercel.app/",
-    "deepLinkScene": "birthday",
+    "deepLinkScene": "",
     "footer": "SIRI — A JOURNEY WRITTEN IN THE STARS\nA small experience created with love, admiration and respect.",
     "enabled": true
   },
@@ -39,7 +39,7 @@
     "message": "At this exact moment, years ago,\na beautiful journey began.\n\nToday, we pause for a moment to remember where it all started.\n\nYou. Your journey. Your story.\n\nFrom that first moment to everything you have become today,\nevery chapter has its own meaning.\n\nHappy Birthday, SIRI. ❤️",
     "buttonText": "REVISIT YOUR BEGINNING →",
     "websiteUrl": "https://siri-birthday-brown.vercel.app/",
-    "deepLinkScene": "birth-moment",
+    "deepLinkScene": "",
     "footer": "SIRI — A JOURNEY WRITTEN IN THE STARS\nA small experience created with love, admiration and respect.",
     "enabled": true
   },
@@ -50,7 +50,7 @@
     "message": "Some moments are measured by dates.\n\nSome are remembered by something deeper.\n\nToday, your corresponding birth Tithi returns.\n\nAshwayuja Shukla Tritiya\n\nA day connected to the beginning of your journey.\n\nBorn under the divine blessings of Sharan Navaratri.\n\nMay this sacred day bring peace, happiness, strength and beautiful blessings into the year ahead.",
     "buttonText": "DISCOVER YOUR TITHI →",
     "websiteUrl": "https://siri-birthday-brown.vercel.app/",
-    "deepLinkScene": "tithi",
+    "deepLinkScene": "",
     "footer": "SIRI — A JOURNEY WRITTEN IN THE STARS\nA small experience created with love, admiration and respect.",
     "enabled": true
   }

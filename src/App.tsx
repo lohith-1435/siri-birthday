@@ -40,6 +40,7 @@ export const App: React.FC = () => {
   const [isUnlocked, setIsUnlocked] = useState<boolean>(() => calculateUnlockCountdown().isUnlocked);
   const [isPreviewMode, setIsPreviewMode] = useState<boolean>(false);
   const [showWelcomeScreen, setShowWelcomeScreen] = useState<boolean>(false);
+  const [pendingSceneIndex, setPendingSceneIndex] = useState<number>(0);
 
   // Living Database Published Records (2003–2103 Span)
   const [timelineEntries, setTimelineEntries] = useState<TimelineEntry[]>([]);
@@ -76,7 +77,7 @@ export const App: React.FC = () => {
 
   const handleFinishWelcome = () => {
     setShowWelcomeScreen(false);
-    handleSelectScene(0); // Start at Scene 1
+    handleSelectScene(pendingSceneIndex); // Start at requested targeted scene (or Scene 0)
   };
 
   const handleEnableSound = () => {
@@ -111,6 +112,7 @@ export const App: React.FC = () => {
     window.addEventListener('hashchange', checkRoute);
 
     // Deep-linking from email buttons (?scene=...)
+    // IMPORTANT: Parameter ONLY selects destination scene; it NEVER grants pre-launch access
     const urlParams = new URLSearchParams(window.location.search);
     const sceneParam = urlParams.get('scene');
     if (sceneParam) {
@@ -136,10 +138,13 @@ export const App: React.FC = () => {
 
       const targetIdx = sceneMap[sceneParam.toLowerCase()] ?? (!isNaN(Number(sceneParam)) ? Number(sceneParam) : null);
       if (targetIdx !== null && targetIdx >= 0 && targetIdx < totalScenes) {
-        setIsUnlocked(true);
-        setTimeout(() => {
-          handleSelectScene(targetIdx);
-        }, 600);
+        setPendingSceneIndex(targetIdx);
+        // Only jump immediately if ALREADY past official unlock time (28 Sep 2026 12:00 AM IST)
+        if (calculateUnlockCountdown().isUnlocked) {
+          setTimeout(() => {
+            handleSelectScene(targetIdx);
+          }, 600);
+        }
       }
     }
 

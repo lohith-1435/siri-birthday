@@ -39,7 +39,7 @@ export const DEFAULT_EMAIL_TEMPLATES: AllEmailTemplates = {
     message: `Some days arrive on a calendar.\nSome days carry a meaning of their own.\n\nYours is one of those days.\n\nBefore the day arrives, we simply wanted to leave you a little message…\n\nAdvance Happy Birthday, {{name}}. ❤️\n\nMay the year ahead bring you moments that make you smile,\npeople who value you,\nand memories that stay close to your heart.\n\nYour story has already come a long way.\n\nAnd there is still so much more to be written.`,
     buttonText: 'STEP INTO YOUR STORY →',
     websiteUrl: 'https://siri-birthday-brown.vercel.app/',
-    deepLinkScene: 'birthday',
+    deepLinkScene: '',
     footer: `SIRI — A JOURNEY WRITTEN IN THE STARS\nA small experience created with love, admiration and respect.`,
     enabled: true,
   },
@@ -50,7 +50,7 @@ export const DEFAULT_EMAIL_TEMPLATES: AllEmailTemplates = {
     message: `Today isn't just another date.\n\nIt's the day your story began.\n\nHappy Birthday, {{name}}. ❤️\n\nMay this new chapter bring beautiful moments,\nmeaningful journeys,\nand memories worth keeping forever.`,
     buttonText: 'ENTER YOUR STORY →',
     websiteUrl: 'https://siri-birthday-brown.vercel.app/',
-    deepLinkScene: 'birthday',
+    deepLinkScene: '',
     footer: `SIRI — A JOURNEY WRITTEN IN THE STARS\nA small experience created with love, admiration and respect.`,
     enabled: true,
   },
@@ -61,7 +61,7 @@ export const DEFAULT_EMAIL_TEMPLATES: AllEmailTemplates = {
     message: `At this exact moment, years ago,\na beautiful journey began.\n\nToday, we pause for a moment to remember where it all started.\n\nYou. Your journey. Your story.\n\nFrom that first moment to everything you have become today,\nevery chapter has its own meaning.\n\nHappy Birthday, {{name}}. ❤️`,
     buttonText: 'REVISIT YOUR BEGINNING →',
     websiteUrl: 'https://siri-birthday-brown.vercel.app/',
-    deepLinkScene: 'birth-moment',
+    deepLinkScene: '',
     footer: `SIRI — A JOURNEY WRITTEN IN THE STARS\nA small experience created with love, admiration and respect.`,
     enabled: true,
   },
@@ -72,7 +72,7 @@ export const DEFAULT_EMAIL_TEMPLATES: AllEmailTemplates = {
     message: `Dear {{name}},\n\nYour solar birth date is remembered every year on 28 September.\n\nAccording to the sacred Hindu lunar tradition, your corresponding birth Tithi returns today on {{tithi_date}} {{current_year}} under the divine auspiciousness of Sharan Navaratri.\n\nMay the divine blessings of Goddess Durga bring eternal peace, good health, flourishing prosperity, and radiant joy to you throughout this year.`,
     buttonText: "DISCOVER TODAY'S TITHI →",
     websiteUrl: 'https://siri-birthday-brown.vercel.app/',
-    deepLinkScene: 'tithi',
+    deepLinkScene: '',
     footer: `SIRI — SHARAN NAVARATRI LUNAR ANNIVERSARY\nA small experience created with love, admiration and respect.`,
     enabled: true,
   },
@@ -189,7 +189,7 @@ export function generateAdvanceEmailHtml(
   const year = contextData.year || new Date().getFullYear();
   const name = contextData.name || 'SIRI';
   const websiteUrl = contextData.websiteUrl || config.websiteUrl;
-  const destinationUrl = buildDestinationUrl(websiteUrl, config.deepLinkScene || 'birthday');
+  const destinationUrl = buildDestinationUrl(websiteUrl, config.deepLinkScene);
 
   const subject = replaceEmailVariables(config.subject, { name, currentYear: year, websiteUrl });
   const topLabel = replaceEmailVariables(config.topLabel || 'A LETTER BEFORE YOUR DAY', { name, currentYear: year });
@@ -343,7 +343,7 @@ export function generateBirthdayMidnightEmailHtml(
   const name = contextData.name || 'SIRI';
   const age = calculateDynamicAge(new Date(`${year}-09-28T08:00:00+05:30`));
   const websiteUrl = contextData.websiteUrl || config.websiteUrl;
-  const destinationUrl = buildDestinationUrl(websiteUrl, config.deepLinkScene || 'birthday');
+  const destinationUrl = buildDestinationUrl(websiteUrl, config.deepLinkScene);
 
   const subject = replaceEmailVariables(config.subject, { name, age, currentYear: year, websiteUrl });
   const topLabel = replaceEmailVariables(config.topLabel || 'MIDNIGHT COSMIC MILESTONE', { name, age, currentYear: year });
@@ -495,7 +495,7 @@ export function generateBirthMomentEmailHtml(
   const name = contextData.name || 'SIRI';
   const age = calculateDynamicAge(new Date(`${year}-09-28T08:00:00+05:30`));
   const websiteUrl = contextData.websiteUrl || config.websiteUrl;
-  const destinationUrl = buildDestinationUrl(websiteUrl, config.deepLinkScene || 'birth-moment');
+  const destinationUrl = buildDestinationUrl(websiteUrl, config.deepLinkScene);
 
   const subject = replaceEmailVariables(config.subject, { name, age, currentYear: year, websiteUrl });
   const topLabel = replaceEmailVariables(config.topLabel || '28 SEPTEMBER · 08:00 AM IST', { name, age, currentYear: year });
@@ -647,7 +647,7 @@ export function generateTithiEmailHtml(
   const name = contextData.name || 'SIRI NANNAA';
   const tithiDate = contextData.tithiDate || '14 October';
   const websiteUrl = contextData.websiteUrl || config.websiteUrl;
-  const destinationUrl = buildDestinationUrl(websiteUrl, config.deepLinkScene || 'tithi');
+  const destinationUrl = buildDestinationUrl(websiteUrl, config.deepLinkScene);
 
   const subject = replaceEmailVariables(config.subject, { name, currentYear: year, tithiDate, websiteUrl });
   const topLabel = replaceEmailVariables(config.topLabel || `SACRED LUNAR RETURN · ${year}`, { name, currentYear: year, tithiDate });
