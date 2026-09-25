@@ -31,14 +31,18 @@ export interface TithiDateRecord {
 export interface EmailLogRecord {
   id: string;
   year: number;
-  event_type: 'birthday_midnight' | 'birth_moment' | 'tithi' | 'test' | 'birthday';
-  mode?: 'test' | 'real';
+  event_type: 'birthday_midnight' | 'birth_moment' | 'tithi' | 'advance' | 'test' | 'birthday';
+  mode?: 'real' | 'test' | 'advance';
   scheduled_date: string;
   recipient: string;
-  sent_at: string;
-  status: 'SENT' | 'SIMULATED' | 'FAILED' | 'SKIPPED_DUPLICATE' | 'SCHEDULED';
+  attempted_at?: string;
+  sent_at?: string;
+  status: 'SENT' | 'SIMULATED' | 'FAILED' | 'SKIPPED_DUPLICATE' | 'SCHEDULED' | 'PENDING';
+  provider_message_id?: string;
+  error_message?: string;
   subject: string;
   error?: string;
+  created_at?: string;
 }
 
 export interface AppSettingsRecord {

@@ -8,10 +8,11 @@ import path from 'path';
 import cron from 'node-cron';
 import nodemailer from 'nodemailer';
 import {
+  generateTestEmailHtml,
+  generateAdvanceEmailHtml,
   generateBirthdayMidnightEmailHtml,
   generateBirthMomentEmailHtml,
   generateTithiEmailHtml,
-  generateAdvanceTestEmailHtml,
   DEFAULT_EMAIL_TEMPLATES,
   replaceEmailVariables,
   type AllEmailTemplates,
@@ -41,6 +42,8 @@ export interface EmailConfig {
   recipientEmail: string;
   recipientName: string;
   senderEmail: string;
+  senderName?: string;
+  replyTo?: string;
   websiteUrl: string;
   smtpHost?: string;
   smtpPort?: number;
@@ -51,21 +54,26 @@ export interface EmailConfig {
 
 export interface EmailLogEntry {
   id: string;
-  recipient: string;
   year: number;
-  eventType: 'birthday_midnight' | 'birth_moment' | 'tithi' | 'test';
-  mode: 'test' | 'real';
+  eventType: 'birthday_midnight' | 'birth_moment' | 'tithi' | 'advance' | 'test';
+  mode: 'real' | 'test' | 'advance';
+  recipient: string;
   scheduledDate: string;
-  sentTimestamp: string;
-  status: 'SENT' | 'SIMULATED' | 'FAILED' | 'SKIPPED_DUPLICATE';
+  attemptedAt: string;
+  sentAt?: string;
+  status: 'SENT' | 'FAILED' | 'SIMULATED' | 'SKIPPED_DUPLICATE';
+  providerMessageId?: string;
+  errorMessage?: string;
   subject: string;
-  error?: string;
+  createdAt: string;
 }
 
 const DEFAULT_CONFIG: EmailConfig = {
   recipientEmail: 'siri@example.com',
   recipientName: 'SIRI',
   senderEmail: 'blessings@divinejourney.com',
+  senderName: 'SIRI Birthday Celestial Journey',
+  replyTo: 'blessings@divinejourney.com',
   websiteUrl: 'http://localhost:5173',
   isSimulatedMode: true,
 };
@@ -73,7 +81,7 @@ const DEFAULT_CONFIG: EmailConfig = {
 function loadConfig(): EmailConfig {
   try {
     if (fs.existsSync(CONFIG_FILE)) {
-      return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
+      return { ...DEFAULT_CONFIG, ...JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8')) };
     }
   } catch (err) {
     console.error('Error reading email config:', err);
@@ -161,8 +169,8 @@ function createTransporter(config: EmailConfig) {
 
 // Core dispatch function with strict test vs real separation and deduplication
 async function dispatchEmail(
-  eventType: 'birthday_midnight' | 'birth_moment' | 'tithi' | 'test',
-  targetYear: number,
+  eventType: 'birthday_midnight' | 'birth_moment' | 'tithi' | 'advance' | 'test',
+  targetYear?: number,
   isManualTest: boolean = false
 ): Promise<{ success: boolean; message: string; log: EmailLogEntry }> {
   const config = loadConfig();
@@ -180,52 +188,68 @@ async function dispatchEmail(
       ? `28 September ${currentYear} · 08:00 AM IST`
       : eventType === 'tithi'
       ? `${tithiDate} ${currentYear} · 08:00 AM IST`
-      : `Advance Test Dispatch (${new Date().toLocaleDateString()})`;
+      : eventType === 'advance'
+      ? `Advance Birthday Dispatch (${currentYear})`
+      : `Test Verification Dispatch (${new Date().toLocaleDateString()})`;
 
-  const logMode: 'test' | 'real' = isManualTest || eventType === 'test' ? 'test' : 'real';
+  const logMode: 'real' | 'test' | 'advance' =
+    eventType === 'test' ? 'test' : eventType === 'advance' ? 'advance' : isManualTest ? 'test' : 'real';
+
+  const attemptedAt = new Date().toISOString();
 
   // Check if template is enabled (for real automated triggers)
-  if (!isManualTest && eventType !== 'test') {
+  if (!isManualTest && (eventType === 'birthday_midnight' || eventType === 'birth_moment' || eventType === 'tithi')) {
     const tmpl = templates[eventType];
     if (tmpl && tmpl.enabled === false) {
+      const disabledLog: EmailLogEntry = {
+        id: `disabled-${Date.now()}`,
+        year: currentYear,
+        eventType,
+        mode: 'real',
+        recipient: config.recipientEmail,
+        scheduledDate,
+        attemptedAt,
+        status: 'SKIPPED_DUPLICATE',
+        subject: `Skipped (Disabled in Settings)`,
+        createdAt: attemptedAt,
+      };
       return {
         success: false,
         message: `Event '${eventType}' is disabled in Admin Email Automation settings.`,
-        log: {
-          id: `disabled-${Date.now()}`,
-          recipient: config.recipientEmail,
-          year: currentYear,
-          eventType,
-          mode: 'real',
-          scheduledDate,
-          sentTimestamp: new Date().toISOString(),
-          status: 'SKIPPED_DUPLICATE',
-          subject: `Skipped (Disabled in Settings)`,
-        },
+        log: disabledLog,
       };
     }
   }
 
   // Deduplication Check (Only applies to REAL automated dispatches)
-  if (!isManualTest && eventType !== 'test') {
+  if (logMode === 'real') {
     const existing = logs.find(
-      (l) => l.year === currentYear && l.eventType === eventType && l.mode === 'real' && (l.status === 'SENT' || l.status === 'SIMULATED')
+      (l) =>
+        l.year === currentYear &&
+        l.eventType === eventType &&
+        l.mode === 'real' &&
+        (l.status === 'SENT' || l.status === 'SIMULATED')
     );
     if (existing) {
       const skippedLog: EmailLogEntry = {
         id: `skip-${Date.now()}`,
-        recipient: config.recipientEmail,
         year: currentYear,
         eventType,
         mode: 'real',
+        recipient: config.recipientEmail,
         scheduledDate,
-        sentTimestamp: new Date().toISOString(),
+        attemptedAt,
         status: 'SKIPPED_DUPLICATE',
-        subject: `[Skipped Duplicate] Already sent for ${currentYear}`,
+        subject: `[Skipped Duplicate] Already successfully sent for ${currentYear}`,
+        createdAt: attemptedAt,
       };
       logs.unshift(skippedLog);
       saveLogs(logs);
-      return { success: true, message: `Email for ${eventType} in ${currentYear} already sent. Skipped duplicate.`, log: skippedLog };
+      return {
+        success: true,
+        message: `Email for ${eventType} in ${currentYear} already sent. Skipped duplicate.`,
+        log: skippedLog,
+      };
     }
   }
 
@@ -237,12 +261,17 @@ async function dispatchEmail(
     year: currentYear,
     websiteUrl: config.websiteUrl,
     tithiDate,
+    recipient: config.recipientEmail,
   };
 
   if (eventType === 'test') {
-    const tmpl = templates.advance_test;
-    subject = replaceEmailVariables(tmpl.subject, { name: config.recipientName, currentYear, tithiDate });
-    html = generateAdvanceTestEmailHtml(tmpl, context);
+    const tmpl = templates.test;
+    subject = replaceEmailVariables(tmpl.subject, { name: config.recipientName, currentYear, tithiDate, recipient: config.recipientEmail });
+    html = generateTestEmailHtml(tmpl, context);
+  } else if (eventType === 'advance') {
+    const tmpl = templates.advance;
+    subject = replaceEmailVariables(tmpl.subject, { name: config.recipientName, currentYear, tithiDate, recipient: config.recipientEmail });
+    html = generateAdvanceEmailHtml(tmpl, context);
   } else if (eventType === 'birthday_midnight') {
     const tmpl = templates.birthday_midnight;
     subject = replaceEmailVariables(tmpl.subject, { name: config.recipientName, currentYear, tithiDate });
@@ -262,23 +291,28 @@ async function dispatchEmail(
 
   if (transporter) {
     try {
-      await transporter.sendMail({
-        from: `"${BIRTH_DETAILS.name} Celestial Journey" <${config.senderEmail || config.smtpUser}>`,
+      const sendResult = await transporter.sendMail({
+        from: `"${config.senderName || BIRTH_DETAILS.name + ' Celestial Journey'}" <${config.senderEmail || config.smtpUser}>`,
         to: config.recipientEmail,
+        replyTo: config.replyTo || config.senderEmail,
         subject,
         html,
       });
 
+      const sentAt = new Date().toISOString();
       const successLog: EmailLogEntry = {
         id: `log-${Date.now()}`,
-        recipient: config.recipientEmail,
         year: currentYear,
         eventType,
         mode: logMode,
+        recipient: config.recipientEmail,
         scheduledDate,
-        sentTimestamp: new Date().toISOString(),
+        attemptedAt,
+        sentAt,
         status: 'SENT',
+        providerMessageId: sendResult.messageId,
         subject,
+        createdAt: sentAt,
       };
       logs.unshift(successLog);
       saveLogs(logs);
@@ -287,38 +321,43 @@ async function dispatchEmail(
       const errorMsg = err instanceof Error ? err.message : String(err);
       const failLog: EmailLogEntry = {
         id: `fail-${Date.now()}`,
-        recipient: config.recipientEmail,
         year: currentYear,
         eventType,
         mode: logMode,
+        recipient: config.recipientEmail,
         scheduledDate,
-        sentTimestamp: new Date().toISOString(),
+        attemptedAt,
         status: 'FAILED',
+        errorMessage: errorMsg,
         subject,
-        error: errorMsg,
+        createdAt: attemptedAt,
       };
       logs.unshift(failLog);
       saveLogs(logs);
-      return { success: false, message: `Email failed to send: ${errorMsg}`, log: failLog };
+      return { success: false, message: `Email delivery failed: ${errorMsg}`, log: failLog };
     }
   } else {
     // Simulated Mode
+    const sentAt = new Date().toISOString();
     const simLog: EmailLogEntry = {
       id: `sim-${Date.now()}`,
-      recipient: config.recipientEmail,
       year: currentYear,
       eventType,
       mode: logMode,
+      recipient: config.recipientEmail,
       scheduledDate,
-      sentTimestamp: new Date().toISOString(),
+      attemptedAt,
+      sentAt,
       status: 'SIMULATED',
+      providerMessageId: `sim_${Date.now()}_local`,
       subject,
+      createdAt: sentAt,
     };
     logs.unshift(simLog);
     saveLogs(logs);
     return {
       success: true,
-      message: `[Simulated Mode] Email for ${eventType} logged & verified successfully for ${config.recipientEmail}`,
+      message: `[Simulated Mode] Email for ${eventType} verified & logged successfully for ${config.recipientEmail}`,
       log: simLog,
     };
   }
@@ -326,7 +365,6 @@ async function dispatchEmail(
 
 // Scheduled check helper evaluated in India Standard Time (Asia/Kolkata)
 async function runDailyCheck(triggerHour: 0 | 8 = 0) {
-  // Compute date in IST (UTC+05:30)
   const now = new Date();
   const utc = now.getTime() + now.getTimezoneOffset() * 60000;
   const istDate = new Date(utc + 3600000 * 5.5);
@@ -342,13 +380,13 @@ async function runDailyCheck(triggerHour: 0 | 8 = 0) {
     // 12:00 AM Midnight Check
     if (currentMonth === 9 && currentDay === 28) {
       console.log(`[Email Scheduler] Birthday Midnight matched! Dispatching Email 1 (birthday_midnight)...`);
-      await dispatchEmail('birthday_midnight', currentYear);
+      await dispatchEmail('birthday_midnight', currentYear, false);
     }
   } else if (triggerHour === 8) {
     // 08:00 AM Morning Check
     if (currentMonth === 9 && currentDay === 28) {
       console.log(`[Email Scheduler] Birth Moment 08:00 AM matched! Dispatching Email 2 (birth_moment)...`);
-      await dispatchEmail('birth_moment', currentYear);
+      await dispatchEmail('birth_moment', currentYear, false);
     }
 
     // Check Tithi date for current year
@@ -359,145 +397,190 @@ async function runDailyCheck(triggerHour: 0 | 8 = 0) {
       const tithiMonth = parts[1].toLowerCase().startsWith('sep') ? 9 : 10;
 
       if (currentMonth === tithiMonth && currentDay === tithiDay) {
-        console.log(`[Email Scheduler] Yearly Tithi matched (${tithiStr}) from database! Dispatching Email 3 (tithi)...`);
-        await dispatchEmail('tithi', currentYear);
+        console.log(`[Email Scheduler] Yearly Tithi matched (${tithiStr})! Dispatching Email 3 (tithi)...`);
+        await dispatchEmail('tithi', currentYear, false);
       }
     }
   }
 }
 
-// Cron 1: Every day at 00:00:00 IST (18:30 UTC previous day)
+// Schedule CRON jobs strictly in Asia/Kolkata timezone
+// 1. Midnight Check (12:00 AM IST)
 cron.schedule(
   '0 0 * * *',
   () => {
     runDailyCheck(0);
   },
-  { timezone: 'Asia/Kolkata' }
+  {
+    timezone: 'Asia/Kolkata',
+  }
 );
 
-// Cron 2: Every day at 08:00:00 IST (02:30 UTC)
+// 2. Morning Check (08:00 AM IST)
 cron.schedule(
   '0 8 * * *',
   () => {
     runDailyCheck(8);
   },
-  { timezone: 'Asia/Kolkata' }
+  {
+    timezone: 'Asia/Kolkata',
+  }
 );
 
-// ================= API ROUTES =================
+// ==========================================
+// API ROUTES
+// ==========================================
 
-// 1. Get Status & Summary
-app.get('/api/email/status', (_req, res) => {
+// 1. GET /api/email/status - Comprehensive status overview
+app.get('/api/email/status', (req, res) => {
   const config = loadConfig();
   const templates = loadTemplates();
   const logs = loadLogs();
   const publishedMap = getPublishedTithiMap();
-  const currentYear = new Date().getFullYear();
 
-  const upcomingSchedule = [];
-  const years = Object.keys(publishedMap).map(Number).sort((a, b) => a - b);
-  for (const yr of years) {
-    if (yr >= currentYear) {
-      upcomingSchedule.push({
-        year: yr,
-        birthdayMidnight: `28 September ${yr} · 12:00 AM IST`,
-        birthMoment: `28 September ${yr} · 08:00 AM IST`,
-        tithiDate: `${publishedMap[yr]} ${yr} · 08:00 AM IST`,
-      });
-    }
-  }
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const istDate = new Date(utc + 3600000 * 5.5);
+  const currentYear = istDate.getFullYear();
+
+  // Helper to determine delivery status for 3 real events
+  const getEventDeliveryStatus = (eventType: 'birthday_midnight' | 'birth_moment' | 'tithi') => {
+    const tmpl = templates[eventType];
+    if (tmpl && tmpl.enabled === false) return 'DISABLED';
+
+    const sentLog = logs.find(
+      (l) => l.year === currentYear && l.eventType === eventType && l.mode === 'real' && (l.status === 'SENT' || l.status === 'SIMULATED')
+    );
+    if (sentLog) return 'SENT';
+
+    const failLog = logs.find(
+      (l) => l.year === currentYear && l.eventType === eventType && l.mode === 'real' && l.status === 'FAILED'
+    );
+    if (failLog) return 'FAILED';
+
+    return 'SCHEDULED';
+  };
+
+  const deliveryStatus = {
+    birthday_midnight: getEventDeliveryStatus('birthday_midnight'),
+    birth_moment: getEventDeliveryStatus('birth_moment'),
+    tithi: getEventDeliveryStatus('tithi'),
+  };
 
   res.json({
-    status: 'ONLINE',
-    schedulerActive: true,
-    timezone: 'Asia/Kolkata (IST)',
-    config: {
-      ...config,
-      smtpPass: config.smtpPass ? '••••••••' : '',
-    },
+    config,
     templates,
-    logs,
-    upcomingSchedule,
+    deliveryStatus,
+    serverTimeIST: istDate.toISOString(),
+    currentYear,
+    tithiDateCurrentYear: publishedMap[currentYear] || '14 October',
+    latestLogs: logs.slice(0, 50),
   });
 });
 
-// 2. Update Configuration
+// 2. GET /api/email/config & POST /api/email/config
+app.get('/api/email/config', (req, res) => {
+  res.json(loadConfig());
+});
+
 app.post('/api/email/config', (req, res) => {
-  const currentConfig = loadConfig();
-  const newConfig: EmailConfig = {
-    ...currentConfig,
-    ...req.body,
-  };
-
-  if (req.body.smtpPass === '••••••••' || !req.body.smtpPass) {
-    newConfig.smtpPass = currentConfig.smtpPass;
+  try {
+    const existing = loadConfig();
+    const updated: EmailConfig = {
+      ...existing,
+      ...req.body,
+    };
+    saveConfig(updated);
+    res.json({ success: true, config: updated });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Error saving config';
+    res.status(500).json({ success: false, error: message });
   }
-
-  saveConfig(newConfig);
-  res.json({ success: true, config: { ...newConfig, smtpPass: newConfig.smtpPass ? '••••••••' : '' } });
 });
 
-// 3. Get Templates
-app.get('/api/email/templates', (_req, res) => {
-  const templates = loadTemplates();
-  res.json(templates);
+// 3. GET /api/email/templates & POST /api/email/templates
+app.get('/api/email/templates', (req, res) => {
+  res.json(loadTemplates());
 });
 
-// 4. Save Templates Customization
 app.post('/api/email/templates', (req, res) => {
-  const currentTemplates = loadTemplates();
-  const updated: AllEmailTemplates = {
-    ...currentTemplates,
-    ...req.body,
-  };
-  saveTemplates(updated);
-  res.json({ success: true, templates: updated });
+  try {
+    const existing = loadTemplates();
+    const updated = {
+      ...existing,
+      ...req.body,
+    };
+    saveTemplates(updated);
+    res.json({ success: true, templates: updated });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Error saving templates';
+    res.status(500).json({ success: false, error: message });
+  }
 });
 
-// 5. Trigger Test Email Dispatch
+// 4. POST /api/email/test-send - Test or manual dispatch
 app.post('/api/email/test-send', async (req, res) => {
-  const { eventType, year } = req.body;
-  const targetType = eventType || 'test';
-  const result = await dispatchEmail(targetType, year || new Date().getFullYear(), true);
-  res.json(result);
+  try {
+    const { type, year } = req.body;
+    const validTypes = ['test', 'advance', 'birthday_midnight', 'birth_moment', 'tithi'];
+    const eventType = validTypes.includes(type) ? type : 'test';
+
+    const result = await dispatchEmail(
+      eventType as 'test' | 'advance' | 'birthday_midnight' | 'birth_moment' | 'tithi',
+      year ? parseInt(year, 10) : undefined,
+      eventType !== 'birthday_midnight' && eventType !== 'birth_moment' && eventType !== 'tithi'
+    );
+
+    res.json(result);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Send error';
+    res.status(500).json({ success: false, message });
+  }
 });
 
-// 6. Manually Run Scheduler Check
-app.post('/api/email/run-check', async (req, res) => {
-  const hour = req.body.hour === 8 ? 8 : 0;
-  await runDailyCheck(hour);
-  res.json({ success: true, message: `Scheduler check completed for ${hour}:00 IST.` });
-});
-
-// 7. Interactive HTML Email Preview
+// 5. GET /api/email/preview/:type - Live HTML render for preview
 app.get('/api/email/preview/:type', (req, res) => {
-  const type = req.params.type;
+  const { type } = req.params;
   const config = loadConfig();
   const templates = loadTemplates();
-  const year = req.query.year ? parseInt(req.query.year as string, 10) : new Date().getFullYear();
   const publishedMap = getPublishedTithiMap();
-  const tithiDate = publishedMap[year] || '14 October';
+  const currentYear = new Date().getFullYear();
+  const tithiDate = publishedMap[currentYear] || '14 October';
 
   const context = {
     name: config.recipientName,
-    year,
+    year: currentYear,
     websiteUrl: config.websiteUrl,
     tithiDate,
+    recipient: config.recipientEmail,
   };
 
-  if (type === 'birthday_midnight') {
-    res.send(generateBirthdayMidnightEmailHtml(templates.birthday_midnight, context));
+  let html: string;
+  if (type === 'advance') {
+    html = generateAdvanceEmailHtml(templates.advance, context);
+  } else if (type === 'birthday_midnight') {
+    html = generateBirthdayMidnightEmailHtml(templates.birthday_midnight, context);
   } else if (type === 'birth_moment') {
-    res.send(generateBirthMomentEmailHtml(templates.birth_moment, context));
+    html = generateBirthMomentEmailHtml(templates.birth_moment, context);
   } else if (type === 'tithi') {
-    res.send(generateTithiEmailHtml(templates.tithi, context));
+    html = generateTithiEmailHtml(templates.tithi, context);
   } else {
-    // advance_test or test
-    res.send(generateAdvanceTestEmailHtml(templates.advance_test, context));
+    html = generateTestEmailHtml(templates.test, context);
   }
+
+  res.setHeader('Content-Type', 'text/html');
+  res.send(html);
+});
+
+// 6. POST /api/email/run-check - Manually trigger scheduler check
+app.post('/api/email/run-check', async (req, res) => {
+  const { triggerHour } = req.body;
+  await runDailyCheck(triggerHour === 8 ? 8 : 0);
+  res.json({ success: true, message: `Scheduler check triggered for ${triggerHour || 0}:00 IST` });
 });
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`✨ SIRI Living Birthday & 3-Tier Email Automation Server running on http://localhost:${PORT}`);
+  console.log(`✨ [SIRI Birthday Backend] Email Automation server active on port ${PORT}`);
+  console.log(`✨ [SIRI Birthday Backend] Scheduler configured for Asia/Kolkata (IST)`);
 });

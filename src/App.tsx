@@ -5,6 +5,7 @@ import { AdminPanel } from './components/admin/AdminPanel';
 import { CountdownLockScreen } from './components/CountdownLockScreen';
 import { WelcomeAgeModal } from './components/WelcomeAgeModal';
 import { TimeSinceBirthCounter } from './components/TimeSinceBirthCounter';
+import { SoundPermissionModal } from './components/SoundPermissionModal';
 import { audioEngine } from './utils/audioEngine';
 import { tithiService } from './services/tithiService';
 import { buildCompleteTimeline, type TimelineEntry } from './data/timelineData';
@@ -31,6 +32,9 @@ export const App: React.FC = () => {
   const [isPlayingFilm, setIsPlayingFilm] = useState(false);
   const totalScenes = 12;
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Sound Permission Popup (only shows if preference not yet chosen)
+  const [showSoundModal, setShowSoundModal] = useState<boolean>(() => audioEngine.getSoundPreference() === null);
 
   // Lock Screen & Preview Access State
   const [isUnlocked, setIsUnlocked] = useState<boolean>(() => calculateUnlockCountdown().isUnlocked);
@@ -73,6 +77,16 @@ export const App: React.FC = () => {
   const handleFinishWelcome = () => {
     setShowWelcomeScreen(false);
     handleSelectScene(0); // Start at Scene 1
+  };
+
+  const handleEnableSound = () => {
+    audioEngine.enableSound();
+    setShowSoundModal(false);
+  };
+
+  const handleContinueSilently = () => {
+    audioEngine.continueSilently();
+    setShowSoundModal(false);
   };
 
   // Scene pacing for automatic film playback (in seconds per scene)
@@ -219,17 +233,42 @@ export const App: React.FC = () => {
 
   // 2. Locked Countdown Screen (before 28 Sep 2026 unless unlocked via countdown or preview code 'mendu')
   if (!isUnlocked) {
-    return <CountdownLockScreen onUnlock={handleUnlockExperience} />;
+    return (
+      <>
+        <CountdownLockScreen onUnlock={handleUnlockExperience} />
+        <SoundPermissionModal
+          isOpen={showSoundModal}
+          onEnableSound={handleEnableSound}
+          onContinueSilently={handleContinueSilently}
+        />
+      </>
+    );
   }
 
   // 3. Welcome Age Screen (after unlock: "WELCOME TO 23", "A new chapter begins.", "SIRI")
   if (showWelcomeScreen) {
-    return <WelcomeAgeModal onContinue={handleFinishWelcome} />;
+    return (
+      <>
+        <WelcomeAgeModal onContinue={handleFinishWelcome} />
+        <SoundPermissionModal
+          isOpen={showSoundModal}
+          onEnableSound={handleEnableSound}
+          onContinueSilently={handleContinueSilently}
+        />
+      </>
+    );
   }
 
   // 4. Main Unlocked Cinematic Birthday Film
   return (
     <div className="relative min-h-screen bg-obsidian-950 text-[#FAF8F5] overflow-x-hidden selection:bg-gold-500/30 selection:text-gold-100">
+      {/* Sound Permission Modal */}
+      <SoundPermissionModal
+        isOpen={showSoundModal}
+        onEnableSound={handleEnableSound}
+        onContinueSilently={handleContinueSilently}
+      />
+
       {/* 60fps Celestial Canvas & Particle Engine */}
       <CelestialBackground sceneIndex={currentScene} />
 
