@@ -1,5 +1,25 @@
 [
   {
+    "id": "log-1790347401623",
+    "recipient": "lohithmedisetti1432004@gmail.com",
+    "year": 2026,
+    "eventType": "test",
+    "scheduledDate": "14 October 2026",
+    "sentTimestamp": "2026-09-25T14:43:21.623Z",
+    "status": "SENT",
+    "subject": "A Divine Birthday Blessing ✨ (Ashwayuja Shukla Tritiya)"
+  },
+  {
+    "id": "log-1790347288188",
+    "recipient": "lohithmedisetti1432004@gmail.com",
+    "year": 2026,
+    "eventType": "birthday",
+    "scheduledDate": "28 September 2026",
+    "sentTimestamp": "2026-09-25T14:41:28.188Z",
+    "status": "SENT",
+    "subject": "Happy Birthday, SIRI NANNAA ✨"
+  },
+  {
     "id": "sim-1790335414162",
     "recipient": "siri@example.com",
     "year": 2026,

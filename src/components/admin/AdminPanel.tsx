@@ -204,15 +204,26 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToFilm, onDataUpda
     }
   };
 
-  const handleSendTestEmail = async (type: 'birthday' | 'tithi') => {
+  const handleSendTestEmail = async (type: 'birthday' | 'tithi' | 'test') => {
     setIsSendingEmail(true);
     setEmailMessage(null);
 
     try {
       const currentYr = new Date().getFullYear();
       const tithiDateStr = stats.currentYearTithi || '14 October';
-      const scheduledDate = type === 'birthday' ? `28 September ${currentYr}` : `${tithiDateStr} ${currentYr}`;
-      const subject = type === 'birthday' ? `Happy Birthday, SIRI ✨` : `A Divine Birthday Blessing ✨ (Ashwayuja Shukla Tritiya)`;
+      const scheduledDate =
+        type === 'birthday'
+          ? `28 September ${currentYr}`
+          : type === 'tithi'
+          ? `${tithiDateStr} ${currentYr}`
+          : `Test Advance Dispatch (${new Date().toLocaleDateString()})`;
+
+      const subject =
+        type === 'test'
+          ? `A Little Early… But Happy Birthday, SIRI ✨`
+          : type === 'birthday'
+          ? `Happy Birthday, SIRI ✨`
+          : `A Divine Birthday Blessing ✨ (Ashwayuja Shukla Tritiya)`;
 
       // Try hitting backend if available
       try {
@@ -236,7 +247,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToFilm, onDataUpda
 
       setEmailMessage({
         type: 'success',
-        text: `[Email Logged] Verified ${type === 'birthday' ? 'Birthday' : 'Tithi'} wish for ${recipientEmail}`,
+        text: `[Email Logged] Verified ${type === 'test' ? 'Advance Birthday' : type === 'birthday' ? 'Birthday' : 'Tithi'} wish for ${recipientEmail}`,
       });
       const logs = await tithiService.getEmailLogs();
       setEmailLogs(logs);
@@ -675,81 +686,113 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToFilm, onDataUpda
                       />
                     </div>
 
-                    {/* Event 1 Card */}
+                    {/* 1. Birthday Email Card */}
                     <div className="p-4 rounded-xl bg-obsidian-950 border border-gold-500/20 flex items-center justify-between">
                       <div>
                         <span className="font-cinzel text-xs text-gold-300 font-semibold block">
-                          EVENT 1 · Fixed Birthday Email
+                          Birthday Email
                         </span>
-                        <span className="text-xs text-gray-400">Every year on 28 September</span>
+                        <span className="text-xs text-white font-medium">28 September</span>
+                        <span className="text-[11px] text-gray-400 block mt-0.5">Fixed annual solar birthday blessing</span>
                       </div>
-                      <button
-                        onClick={() => handleSendTestEmail('birthday')}
-                        disabled={isSendingEmail}
-                        className="px-3 py-1.5 rounded-lg bg-gold-500/10 hover:bg-gold-500/20 border border-gold-400/40 text-gold-200 text-xs font-cinzel flex items-center gap-1.5"
-                      >
-                        <Send className="w-3 h-3" /> Test
-                      </button>
+                      <span className="px-2.5 py-1 rounded-full bg-gold-500/10 border border-gold-500/30 text-[10px] font-cinzel text-gold-300 uppercase tracking-wider">
+                        Annual Auto
+                      </span>
                     </div>
 
-                    {/* Event 2 Card */}
+                    {/* 2. Tithi Email Card */}
                     <div className="p-4 rounded-xl bg-obsidian-950 border border-gold-500/20 flex items-center justify-between">
                       <div>
                         <span className="font-cinzel text-xs text-gold-300 font-semibold block">
-                          EVENT 2 · Yearly Tithi Email
+                          Tithi Email
                         </span>
-                        <span className="text-xs text-gray-400">
-                          {stats.currentYear}: {stats.currentYearTithi || 'Awaiting publication'}
+                        <span className="text-xs text-white font-medium">
+                          {stats.currentYear}: {stats.currentYearTithi || '14 October'}
+                        </span>
+                        <span className="text-[11px] text-gray-400 block mt-0.5">Dynamic Ashwayuja Shukla Tritiya date</span>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-full bg-burgundy-950 border border-gold-500/30 text-[10px] font-cinzel text-gold-300 uppercase tracking-wider">
+                        Lunar Auto
+                      </span>
+                    </div>
+
+                    {/* 3. Send Test Email (Advance Happy Birthday) */}
+                    <div className="p-4 rounded-xl bg-gradient-to-r from-obsidian-950 to-gold-950/30 border border-gold-400/40 flex items-center justify-between">
+                      <div>
+                        <span className="font-cinzel text-xs text-gold-200 font-bold block flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-gold-400" /> Test Email (Advance Wish)
+                        </span>
+                        <span className="text-[11px] text-gray-300 block mt-0.5">
+                          Sends instant Advance Happy Birthday preview without affecting real logs
                         </span>
                       </div>
                       <button
-                        onClick={() => handleSendTestEmail('tithi')}
+                        onClick={() => handleSendTestEmail('test')}
                         disabled={isSendingEmail}
-                        className="px-3 py-1.5 rounded-lg bg-burgundy-950 hover:bg-burgundy-900 border border-gold-400/40 text-gold-200 text-xs font-cinzel flex items-center gap-1.5"
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 hover:to-amber-500 text-obsidian-950 text-xs font-cinzel font-bold tracking-wider uppercase flex items-center gap-1.5 shadow-[0_0_15px_rgba(212,175,55,0.35)] transition-all disabled:opacity-50"
                       >
-                        <Send className="w-3 h-3" /> Test
+                        <Send className="w-3.5 h-3.5" />
+                        <span>{isSendingEmail ? 'Sending...' : 'Send Test'}</span>
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Deduplication Logs */}
+              {/* Deduplication & Email History */}
               <div className="gold-card p-6 rounded-2xl border-gold-500/30 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between pb-3 mb-3 border-b border-gold-500/20">
                     <h3 className="font-cinzel text-xs font-bold text-gold-200 uppercase tracking-widest flex items-center gap-2">
-                      <History className="w-4 h-4 text-gold-400" /> Deduplication & Sent History
+                      <History className="w-4 h-4 text-gold-400" /> Email History & Logs
                     </h3>
-                    <span className="text-[11px] text-gray-400">{emailLogs.length} entries</span>
+                    <span className="text-[11px] text-gray-400">{emailLogs.length} records</span>
                   </div>
 
-                  <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1 scrollbar-thin">
+                  <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1 scrollbar-thin">
                     {emailLogs.length === 0 ? (
                       <p className="text-xs text-gray-500 text-center py-6">No email dispatches recorded yet.</p>
                     ) : (
-                      emailLogs.map((log) => (
-                        <div
-                          key={log.id}
-                          className="p-3 rounded-xl bg-obsidian-950/80 border border-gold-500/15 flex items-center justify-between text-xs"
-                        >
-                          <div>
-                            <span className="font-cinzel font-semibold text-white block">
-                              {log.year} · <span className="gold-text uppercase">{log.event_type}</span>
-                            </span>
-                            <span className="text-[11px] text-gray-400">{log.recipient} · {log.scheduled_date}</span>
-                          </div>
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              log.status === 'SENT'
-                                ? 'bg-emerald-500/20 text-emerald-300'
-                                : 'bg-gold-500/20 text-gold-300'
-                            }`}
+                      emailLogs.map((log) => {
+                        const isTest = (log as any).mode === 'test' || log.event_type === 'test';
+                        return (
+                          <div
+                            key={log.id}
+                            className="p-3 rounded-xl bg-obsidian-950/80 border border-gold-500/15 flex items-center justify-between text-xs"
                           >
-                            {log.status}
-                          </span>
-                        </div>
-                      ))
+                            <div>
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span
+                                  className={`px-1.5 py-0.2 rounded text-[9px] font-cinzel font-bold uppercase tracking-wider ${
+                                    isTest
+                                      ? 'bg-amber-500/20 text-amber-300 border border-amber-400/40'
+                                      : 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
+                                  }`}
+                                >
+                                  {isTest ? 'TEST' : 'REAL'}
+                                </span>
+                                <span className="font-cinzel font-semibold text-white">
+                                  {log.year} · <span className="gold-text uppercase">{log.event_type}</span>
+                                </span>
+                              </div>
+                              <span className="text-[11px] text-gray-400 block">{log.recipient} · {log.scheduled_date}</span>
+                            </div>
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                log.status === 'SENT'
+                                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                  : log.status === 'FAILED'
+                                  ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                                  : log.status === 'SKIPPED_DUPLICATE'
+                                  ? 'bg-gray-700/40 text-gray-400 border border-gray-600/30'
+                                  : 'bg-gold-500/20 text-gold-300 border border-gold-500/30'
+                              }`}
+                            >
+                              {log.status}
+                            </span>
+                          </div>
+                        );
+                      })
                     )}
                   </div>
                 </div>

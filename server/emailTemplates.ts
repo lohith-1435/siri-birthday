@@ -170,3 +170,88 @@ export function generateTithiEmailHtml(recipientName: string = 'SIRI', year: num
 </html>
   `;
 }
+
+export function generateAdvanceTestEmailHtml(recipientName: string = 'SIRI', year: number = 2026): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advance Happy Birthday, ${recipientName}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #050508; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #FAF8F5;">
+
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #050508; padding: 40px 10px;">
+    <tr>
+      <td align="center">
+        <!-- Main Luxury Card -->
+        <table role="presentation" width="600" border="0" cellspacing="0" cellpadding="0" style="background: linear-gradient(145deg, #14101A 0%, #07060A 100%); border: 1px solid #D4AF37; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.85);">
+          
+          <!-- Top Celestial Header -->
+          <tr>
+            <td align="center" style="padding: 40px 30px 20px 30px; border-bottom: 1px solid rgba(212,175,55,0.25);">
+              <div style="width: 50px; height: 50px; border-radius: 50%; border: 1px solid #D4AF37; line-height: 50px; text-align: center; color: #D4AF37; font-size: 20px; font-weight: bold; margin-bottom: 15px; background-color: rgba(212,175,55,0.1);">
+                ✨
+              </div>
+              <p style="margin: 0; font-size: 11px; letter-spacing: 4px; color: #D4AF37; text-transform: uppercase;">
+                A Little Early · Milestone Preview
+              </p>
+              <h1 style="margin: 15px 0 0 0; font-size: 32px; font-weight: 700; letter-spacing: 2px; color: #FAF8F5; text-transform: uppercase;">
+                ADVANCE HAPPY BIRTHDAY, <span style="color: #D4AF37;">${recipientName}</span>!
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Date Highlight -->
+          <tr>
+            <td align="center" style="padding: 25px 40px 10px 40px;">
+              <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="background-color: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.35); border-radius: 50px; padding: 10px 28px;">
+                <tr>
+                  <td align="center" style="color: #FFF8E7; font-size: 14px; letter-spacing: 2px; font-weight: 600;">
+                    BIRTHDAY: 28 SEPTEMBER ${year}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Core Message -->
+          <tr>
+            <td style="padding: 25px 45px 35px 45px; text-align: center; line-height: 1.8; color: #E8E4DF; font-size: 15px;">
+              <p style="font-size: 17px; font-style: italic; color: #F3E5AB; margin-bottom: 20px;">
+                28 September is still a little ahead, but some birthdays are too special to wait for.
+              </p>
+              <p style="font-size: 20px; font-weight: bold; color: #D4AF37; margin: 0 0 15px 0;">
+                Advance Happy Birthday, ${recipientName}!
+              </p>
+              <p style="margin: 0 0 15px 0; color: #C5C0B8;">
+                Your special day is almost here.
+              </p>
+              <p style="margin: 0; color: #A8A29A; font-size: 13px;">
+                Born under the sacred blessings of <strong>Sharan Navaratri</strong>, with <strong>Tula Rashi</strong> and <strong>Swati Nakshatra</strong>, may the ruling light of <strong>Venus (Shukra)</strong> continue to illuminate your path with boundless love, peace, and eternal joy.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Sacred Details Footer -->
+          <tr>
+            <td align="center" style="padding: 25px 30px; background-color: #0A080E; border-top: 1px solid rgba(212,175,55,0.2);">
+              <p style="margin: 0 0 8px 0; font-size: 10px; letter-spacing: 2px; color: #D4AF37; text-transform: uppercase;">
+                ${BIRTH_DETAILS.blessing}
+              </p>
+              <p style="margin: 0; font-size: 11px; color: #736E67;">
+                SIRI · A Journey Written in the Stars (2003 – 2103)
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+}
+

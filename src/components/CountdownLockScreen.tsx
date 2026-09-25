@@ -74,7 +74,7 @@ export const CountdownLockScreen: React.FC<CountdownLockScreenProps> = ({ onUnlo
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 2.2, delay: 0.6 }}
-          className="font-cinzel text-6xl sm:text-8xl md:text-9xl font-bold gold-text tracking-wider my-1 drop-shadow-[0_20px_50px_rgba(212,175,55,0.35)]"
+          className="font-cinzel text-5xl xs:text-6xl sm:text-8xl md:text-9xl font-bold gold-text tracking-wider my-1 drop-shadow-[0_20px_50px_rgba(212,175,55,0.35)]"
         >
           SIRI
         </motion.h1>
@@ -83,17 +83,17 @@ export const CountdownLockScreen: React.FC<CountdownLockScreenProps> = ({ onUnlo
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.7 }}
           transition={{ duration: 1.8, delay: 1.0 }}
-          className="font-cormorant italic text-sm sm:text-base md:text-lg text-gold-100 font-light tracking-wide mb-10"
+          className="font-cormorant italic text-xs sm:text-base md:text-lg text-gold-100 font-light tracking-wide mb-8 sm:mb-10 px-4"
         >
           Born under the divine blessings of <span className="text-gold-300 not-italic font-cinzel">Sharan Navaratri</span>
         </motion.p>
 
-        {/* Live Countdown Grid */}
+        {/* Live Countdown Grid - Mobile Optimized (320px - 430px) */}
         <motion.div
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 2.0, delay: 1.3 }}
-          className="flex items-center justify-center gap-3 sm:gap-6 my-4"
+          className="flex items-center justify-center gap-1.5 xs:gap-3 sm:gap-6 my-3 max-w-full px-1"
         >
           {[
             { label: 'DAYS', value: countdown.days },
@@ -103,12 +103,12 @@ export const CountdownLockScreen: React.FC<CountdownLockScreenProps> = ({ onUnlo
           ].map((unit, idx) => (
             <div
               key={idx}
-              className="gold-card px-4 sm:px-6 py-4 sm:py-5 rounded-2xl border-gold-500/30 flex flex-col items-center min-w-[70px] sm:min-w-[95px] shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
+              className="gold-card px-2 xs:px-4 sm:px-6 py-2.5 xs:py-3.5 sm:py-5 rounded-xl sm:rounded-2xl border-gold-500/30 flex flex-col items-center min-w-[56px] xs:min-w-[68px] sm:min-w-[95px] shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
             >
-              <span className="font-cinzel text-3xl sm:text-5xl font-bold gold-text">
+              <span className="font-cinzel text-2xl xs:text-3xl sm:text-5xl font-bold gold-text">
                 {String(unit.value).padStart(2, '0')}
               </span>
-              <span className="font-outfit text-[9px] sm:text-[11px] text-gray-400 uppercase tracking-widest mt-1">
+              <span className="font-outfit text-[8px] xs:text-[9px] sm:text-[11px] text-gray-400 uppercase tracking-widest mt-0.5 sm:mt-1">
                 {unit.label}
               </span>
             </div>
@@ -120,10 +120,10 @@ export const CountdownLockScreen: React.FC<CountdownLockScreenProps> = ({ onUnlo
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.9 }}
           transition={{ duration: 1.8, delay: 1.8 }}
-          className="mt-8 inline-flex items-center gap-2 px-5 py-2 rounded-full bg-obsidian-900/80 border border-gold-500/25 text-gold-300 font-cinzel text-xs tracking-widest uppercase"
+          className="mt-6 sm:mt-8 inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full bg-obsidian-900/80 border border-gold-500/25 text-gold-300 font-cinzel text-[10px] sm:text-xs tracking-wider sm:tracking-widest uppercase text-center"
         >
-          <Lock className="w-3.5 h-3.5 text-gold-400" />
-          <span>Unlocks Automatically on 28 September 2026</span>
+          <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gold-400 shrink-0" />
+          <span>Unlocks on 28 September 2026</span>
         </motion.div>
 
         {/* Secret Preview Access Toggle */}

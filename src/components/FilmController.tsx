@@ -115,15 +115,15 @@ export const FilmController: React.FC<FilmControllerProps> = ({
       {/* Top Floating Luxury Header Bar */}
       <header className="fixed top-0 left-0 right-0 z-40 px-4 sm:px-8 py-4 flex items-center justify-between pointer-events-none">
         {/* Brand Monogram */}
-        <div className="flex items-center gap-3 pointer-events-auto select-none">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-gold-400/50 bg-obsidian-950/80 backdrop-blur-md flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.25)]">
-            <span className="font-cinzel text-xs font-bold gold-text">S</span>
+        <div className="flex items-center gap-2 sm:gap-3 pointer-events-auto select-none">
+          <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full border border-gold-400/50 bg-obsidian-950/80 backdrop-blur-md flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.25)] shrink-0">
+            <span className="font-cinzel text-[10px] sm:text-xs font-bold gold-text">S</span>
           </div>
           <div>
-            <span className="font-cinzel text-xs sm:text-sm font-semibold tracking-[0.3em] text-white block">
+            <span className="font-cinzel text-[11px] sm:text-sm font-semibold tracking-[0.2em] sm:tracking-[0.3em] text-white block">
               SIRI
             </span>
-            <span className="font-outfit text-[8px] sm:text-[9px] text-gold-400/70 tracking-widest uppercase">
+            <span className="font-outfit text-[8px] sm:text-[9px] text-gold-400/70 tracking-widest uppercase hidden sm:block">
               Written in the Stars
             </span>
           </div>

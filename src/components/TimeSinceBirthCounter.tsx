@@ -18,16 +18,16 @@ export const TimeSinceBirthCounter: React.FC<TimeSinceBirthCounterProps> = ({ is
   }, []);
 
   return (
-    <div className="fixed top-3.5 sm:top-4 right-16 sm:right-20 z-40 pointer-events-none select-none">
-      <div className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-2xl bg-obsidian-950/85 backdrop-blur-md border border-gold-500/30 shadow-[0_10px_30px_rgba(0,0,0,0.8),0_0_15px_rgba(212,175,55,0.1)] flex flex-col items-end text-right transition-all duration-300">
+    <div className="fixed top-2.5 sm:top-4 right-14 sm:right-20 z-40 pointer-events-none select-none max-w-[calc(100vw-80px)]">
+      <div className="px-2.5 py-1 sm:px-3.5 sm:py-2 rounded-xl sm:rounded-2xl bg-obsidian-950/90 backdrop-blur-md border border-gold-500/30 shadow-[0_10px_30px_rgba(0,0,0,0.8),0_0_15px_rgba(212,175,55,0.1)] flex flex-col items-end text-right transition-all duration-300">
         {/* Top Tag & Preview Mode Indicator */}
-        <div className="flex items-center gap-2 mb-0.5">
+        <div className="flex flex-wrap items-center justify-end gap-1 sm:gap-2 mb-0.5">
           {isPreviewMode && (
-            <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 border border-amber-400/50 text-[9px] font-cinzel text-amber-300 font-bold tracking-widest uppercase">
-              ✦ Preview Mode
+            <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 border border-amber-400/50 text-[8px] sm:text-[9px] font-cinzel text-amber-300 font-bold tracking-widest uppercase shrink-0">
+              ✦ Preview
             </span>
           )}
-          <span className="font-outfit text-[9px] sm:text-[10px] tracking-[0.2em] text-gold-400/80 uppercase font-medium">
+          <span className="font-outfit text-[8px] sm:text-[10px] tracking-[0.1em] sm:tracking-[0.2em] text-gold-400/80 uppercase font-medium whitespace-nowrap">
             Since 28 Sep 2003 · 08:00 AM
           </span>
         </div>

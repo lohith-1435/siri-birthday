@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import cron from 'node-cron';
 import nodemailer from 'nodemailer';
-import { generateBirthdayEmailHtml, generateTithiEmailHtml } from './emailTemplates';
+import { generateBirthdayEmailHtml, generateTithiEmailHtml, generateAdvanceTestEmailHtml } from './emailTemplates';
 import { BIRTH_DETAILS } from '../src/data/timelineData';
 import { INITIAL_VERIFIED_DATES } from '../src/services/tithiService';
 
@@ -43,6 +43,7 @@ export interface EmailLogEntry {
   recipient: string;
   year: number;
   eventType: 'birthday' | 'tithi' | 'test';
+  mode: 'test' | 'real';
   scheduledDate: string;
   sentTimestamp: string;
   status: 'SENT' | 'SIMULATED' | 'FAILED' | 'SKIPPED_DUPLICATE';
@@ -131,7 +132,7 @@ function createTransporter(config: EmailConfig) {
   });
 }
 
-// Core dispatch function with deduplication safety
+// Core dispatch function with separate test/real safety
 async function dispatchEmail(
   eventType: 'birthday' | 'tithi' | 'test',
   targetYear: number,
@@ -143,12 +144,19 @@ async function dispatchEmail(
 
   const currentYear = targetYear || new Date().getFullYear();
   const tithiDate = publishedMap[currentYear] || '14 October';
-  const scheduledDate = eventType === 'birthday' ? `28 September ${currentYear}` : `${tithiDate} ${currentYear}`;
+  const scheduledDate =
+    eventType === 'birthday'
+      ? `28 September ${currentYear}`
+      : eventType === 'tithi'
+      ? `${tithiDate} ${currentYear}`
+      : `Test Dispatch (${new Date().toLocaleDateString()})`;
 
-  // Deduplication Check (unless manual test)
-  if (!isManualTest) {
+  const logMode: 'test' | 'real' = isManualTest || eventType === 'test' ? 'test' : 'real';
+
+  // Deduplication Check (Only applies to REAL automated dispatches)
+  if (!isManualTest && eventType !== 'test') {
     const existing = logs.find(
-      (l) => l.year === currentYear && l.eventType === eventType && (l.status === 'SENT' || l.status === 'SIMULATED')
+      (l) => l.year === currentYear && l.eventType === eventType && l.mode === 'real' && (l.status === 'SENT' || l.status === 'SIMULATED')
     );
     if (existing) {
       const skippedLog: EmailLogEntry = {
@@ -156,6 +164,7 @@ async function dispatchEmail(
         recipient: config.recipientEmail,
         year: currentYear,
         eventType,
+        mode: 'real',
         scheduledDate,
         sentTimestamp: new Date().toISOString(),
         status: 'SKIPPED_DUPLICATE',
@@ -167,15 +176,28 @@ async function dispatchEmail(
     }
   }
 
-  const subject =
-    eventType === 'birthday'
-      ? `Happy Birthday, ${config.recipientName} ✨`
-      : `A Divine Birthday Blessing ✨ (${BIRTH_DETAILS.tithi})`;
+  // Determine Subject and HTML based on eventType and mode
+  let subject: string;
+  let html: string;
 
-  const html =
-    eventType === 'birthday'
-      ? generateBirthdayEmailHtml(config.recipientName, currentYear)
-      : generateTithiEmailHtml(config.recipientName, currentYear, tithiDate);
+  if (eventType === 'test') {
+    subject = `A Little Early… But Happy Birthday, ${config.recipientName} ✨`;
+    html = generateAdvanceTestEmailHtml(config.recipientName, currentYear);
+  } else if (eventType === 'birthday') {
+    if (isManualTest) {
+      // If manual test before real birthday
+      subject = `A Little Early… But Happy Birthday, ${config.recipientName} ✨`;
+      html = generateAdvanceTestEmailHtml(config.recipientName, currentYear);
+    } else {
+      // Real birthday email on 28 September
+      subject = `Happy Birthday, ${config.recipientName} ✨`;
+      html = generateBirthdayEmailHtml(config.recipientName, currentYear);
+    }
+  } else {
+    // Tithi email
+    subject = `A Divine Birthday Blessing ✨ (${BIRTH_DETAILS.tithi})`;
+    html = generateTithiEmailHtml(config.recipientName, currentYear, tithiDate);
+  }
 
   const transporter = createTransporter(config);
 
@@ -193,6 +215,7 @@ async function dispatchEmail(
         recipient: config.recipientEmail,
         year: currentYear,
         eventType,
+        mode: logMode,
         scheduledDate,
         sentTimestamp: new Date().toISOString(),
         status: 'SENT',
@@ -208,6 +231,7 @@ async function dispatchEmail(
         recipient: config.recipientEmail,
         year: currentYear,
         eventType,
+        mode: logMode,
         scheduledDate,
         sentTimestamp: new Date().toISOString(),
         status: 'FAILED',
@@ -225,6 +249,7 @@ async function dispatchEmail(
       recipient: config.recipientEmail,
       year: currentYear,
       eventType,
+      mode: logMode,
       scheduledDate,
       sentTimestamp: new Date().toISOString(),
       status: 'SIMULATED',
@@ -239,6 +264,7 @@ async function dispatchEmail(
     };
   }
 }
+
 
 // Check today's date against database scheduled dates
 async function runDailyCheck() {
@@ -348,6 +374,8 @@ app.get('/api/email/preview/:type', (req, res) => {
 
   if (type === 'tithi') {
     res.send(generateTithiEmailHtml(config.recipientName, year, tithiDate));
+  } else if (type === 'advance' || type === 'test') {
+    res.send(generateAdvanceTestEmailHtml(config.recipientName, year));
   } else {
     res.send(generateBirthdayEmailHtml(config.recipientName, year));
   }
@@ -357,3 +385,4 @@ app.get('/api/email/preview/:type', (req, res) => {
 app.listen(PORT, () => {
   console.log(`✨ SIRI Living Birthday & Email Automation Server running on http://localhost:${PORT}`);
 });
+
