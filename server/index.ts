@@ -16,7 +16,6 @@ import {
   DEFAULT_EMAIL_TEMPLATES,
   replaceEmailVariables,
   type AllEmailTemplates,
-  type CustomEmailTemplateConfig,
 } from './emailTemplates';
 import { BIRTH_DETAILS } from '../src/data/timelineData';
 import { INITIAL_VERIFIED_DATES } from '../src/services/tithiService';
@@ -126,14 +125,12 @@ function saveLogs(logs: EmailLogEntry[]) {
 // Read published Tithi dates dynamically
 function getPublishedTithiMap(): Record<number, string> {
   const map: Record<number, string> = {};
-  // Initial verified seed
   INITIAL_VERIFIED_DATES.forEach((item) => {
     if (item.status === 'published') {
       map[item.year] = item.date;
     }
   });
 
-  // Check if custom server DB file exists
   try {
     if (fs.existsSync(TITHI_DB_FILE)) {
       const custom = JSON.parse(fs.readFileSync(TITHI_DB_FILE, 'utf-8'));
@@ -171,10 +168,29 @@ function createTransporter(config: EmailConfig) {
 async function dispatchEmail(
   eventType: 'birthday_midnight' | 'birth_moment' | 'tithi' | 'advance' | 'test',
   targetYear?: number,
-  isManualTest: boolean = false
+  isManualTest: boolean = false,
+  overrides?: {
+    recipientEmail?: string;
+    recipientName?: string;
+    websiteUrl?: string;
+    senderEmail?: string;
+    senderName?: string;
+    replyTo?: string;
+    templates?: AllEmailTemplates;
+  }
 ): Promise<{ success: boolean; message: string; log: EmailLogEntry }> {
-  const config = loadConfig();
-  const templates = loadTemplates();
+  const baseConfig = loadConfig();
+  const config: EmailConfig = {
+    ...baseConfig,
+    ...(overrides?.recipientEmail ? { recipientEmail: overrides.recipientEmail } : {}),
+    ...(overrides?.recipientName ? { recipientName: overrides.recipientName } : {}),
+    ...(overrides?.websiteUrl ? { websiteUrl: overrides.websiteUrl } : {}),
+    ...(overrides?.senderEmail ? { senderEmail: overrides.senderEmail } : {}),
+    ...(overrides?.senderName ? { senderName: overrides.senderName } : {}),
+    ...(overrides?.replyTo ? { replyTo: overrides.replyTo } : {}),
+  };
+
+  const templates = overrides?.templates ? { ...DEFAULT_EMAIL_TEMPLATES, ...overrides.templates } : loadTemplates();
   const logs = loadLogs();
   const publishedMap = getPublishedTithiMap();
 
@@ -253,7 +269,7 @@ async function dispatchEmail(
     }
   }
 
-  // Generate HTML & Subject
+  // Generate HTML & Subject with actual updated config name and variables
   let subject: string;
   let html: string;
   const context = {
@@ -521,14 +537,48 @@ app.post('/api/email/templates', (req, res) => {
 // 4. POST /api/email/test-send - Test or manual dispatch
 app.post('/api/email/test-send', async (req, res) => {
   try {
-    const { type, year } = req.body;
+    const { type, year, recipientEmail, recipientName, websiteUrl, senderEmail, senderName, replyTo, templates } = req.body;
+
+    // Auto-persist latest parameters from the frontend request if provided
+    if (recipientEmail || recipientName || websiteUrl || senderEmail || senderName || replyTo) {
+      const curConfig = loadConfig();
+      const updatedConfig = {
+        ...curConfig,
+        ...(recipientEmail ? { recipientEmail } : {}),
+        ...(recipientName ? { recipientName } : {}),
+        ...(websiteUrl ? { websiteUrl } : {}),
+        ...(senderEmail ? { senderEmail } : {}),
+        ...(senderName ? { senderName } : {}),
+        ...(replyTo ? { replyTo } : {}),
+      };
+      saveConfig(updatedConfig);
+    }
+
+    if (templates) {
+      const curTemplates = loadTemplates();
+      const updatedTemplates = {
+        ...curTemplates,
+        ...templates,
+      };
+      saveTemplates(updatedTemplates);
+    }
+
     const validTypes = ['test', 'advance', 'birthday_midnight', 'birth_moment', 'tithi'];
     const eventType = validTypes.includes(type) ? type : 'test';
 
     const result = await dispatchEmail(
       eventType as 'test' | 'advance' | 'birthday_midnight' | 'birth_moment' | 'tithi',
       year ? parseInt(year, 10) : undefined,
-      eventType !== 'birthday_midnight' && eventType !== 'birth_moment' && eventType !== 'tithi'
+      eventType !== 'birthday_midnight' && eventType !== 'birth_moment' && eventType !== 'tithi',
+      {
+        recipientEmail,
+        recipientName,
+        websiteUrl,
+        senderEmail,
+        senderName,
+        replyTo,
+        templates,
+      }
     );
 
     res.json(result);

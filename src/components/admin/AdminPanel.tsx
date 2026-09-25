@@ -354,6 +354,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToFilm, onDataUpda
         body: JSON.stringify({
           type: targetType,
           year: stats.currentYear,
+          recipientEmail,
+          recipientName,
+          websiteUrl,
+          senderEmail,
+          senderName,
+          replyTo,
+          templates,
         }),
       });
 
