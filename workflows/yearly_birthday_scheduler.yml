@@ -1,0 +1,36 @@
+name: SIRI Yearly Birthday & Tithi Email Scheduler
+
+on:
+  schedule:
+    # Runs every day at 00:00 UTC (05:30 AM IST)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows manual trigger anytime from GitHub Actions tab
+
+jobs:
+  check-and-send:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Execute Daily Email Scheduler
+        env:
+          PORT: 3001
+          RECIPIENT_NAME: 'SIRI'
+          RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL || 'lohithmedisetti1432004@gmail.com' }}
+          SMTP_HOST: 'smtp.gmail.com'
+          SMTP_PORT: 465
+          SMTP_USER: ${{ secrets.SMTP_USER || 'lohithmedisetti@gmail.com' }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS || 'ihmu xdbq bccv zjhw' }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL || 'lohithmedisetti@gmail.com' }}
+          IS_SIMULATED_MODE: 'false'
+        run: npx tsx scripts/testEmail.ts
