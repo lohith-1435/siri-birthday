@@ -1,0 +1,10 @@
+{
+  "recipientName": "SIRI",
+  "recipientEmail": "lohithmedisetti1432004@gmail.com",
+  "senderEmail": "lohithmedisetti@gmail.com",
+  "smtpHost": "smtp.gmail.com",
+  "smtpPort": 465,
+  "smtpUser": "lohithmedisetti@gmail.com",
+  "smtpPass": "ihmu xdbq bccv zjhw",
+  "isSimulatedMode": false
+}

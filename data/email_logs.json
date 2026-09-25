@@ -1,0 +1,52 @@
+[
+  {
+    "id": "sim-1790335414162",
+    "recipient": "siri@example.com",
+    "year": 2026,
+    "eventType": "birthday",
+    "scheduledDate": "28 September 2026",
+    "sentTimestamp": "2026-09-25T11:23:34.162Z",
+    "status": "SIMULATED",
+    "subject": "Happy Birthday, SIRI ✨"
+  },
+  {
+    "id": "sim-1790335231255",
+    "recipient": "siri@example.com",
+    "year": 2026,
+    "eventType": "birthday",
+    "scheduledDate": "28 September 2026",
+    "sentTimestamp": "2026-09-25T11:20:31.256Z",
+    "status": "SIMULATED",
+    "subject": "Happy Birthday, SIRI ✨"
+  },
+  {
+    "id": "sim-1790335209182",
+    "recipient": "siri@example.com",
+    "year": 2026,
+    "eventType": "birthday",
+    "scheduledDate": "28 September 2026",
+    "sentTimestamp": "2026-09-25T11:20:09.182Z",
+    "status": "SIMULATED",
+    "subject": "Happy Birthday, SIRI ✨"
+  },
+  {
+    "id": "sim-1790328657896",
+    "recipient": "siri@example.com",
+    "year": 2026,
+    "eventType": "birthday",
+    "scheduledDate": "28 September 2026",
+    "sentTimestamp": "2026-09-25T09:30:57.896Z",
+    "status": "SIMULATED",
+    "subject": "Happy Birthday, SIRI ✨"
+  },
+  {
+    "id": "sim-1790328633032",
+    "recipient": "siri@example.com",
+    "year": 2026,
+    "eventType": "birthday",
+    "scheduledDate": "28 September 2026",
+    "sentTimestamp": "2026-09-25T09:30:33.032Z",
+    "status": "SIMULATED",
+    "subject": "Happy Birthday, SIRI ✨"
+  }
+]
