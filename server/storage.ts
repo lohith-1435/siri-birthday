@@ -266,6 +266,20 @@ export async function saveEmailConfigAsync(config: EmailConfig): Promise<void> {
 // 2. EMAIL TEMPLATES & SCHEDULED ITEMS PERSISTENCE
 // -------------------------------------------------------------
 
+export function deduplicateSchedules(list: EmailItem[]): EmailItem[] {
+  if (!Array.isArray(list)) return [];
+  const map = new Map<string, EmailItem>();
+  for (const item of list) {
+    if (item && item.id) {
+      map.set(item.id, item);
+    }
+  }
+  return Array.from(map.values()).filter(it => 
+    (it.id.startsWith('sched_') || it.id.startsWith('resched_')) &&
+    ['SCHEDULED', 'READY', 'PENDING'].includes((it.status || '').toUpperCase())
+  );
+}
+
 export async function loadScheduledEmailsAsync(): Promise<EmailItem[]> {
   // 1. Try Supabase cloud database
   if (isSupabaseConfigured && supabase) {
@@ -277,9 +291,10 @@ export async function loadScheduledEmailsAsync(): Promise<EmailItem[]> {
         .maybeSingle();
 
       if (!error && data?.value && Array.isArray((data.value as any).scheduled)) {
-        const scheduled = (data.value as any).scheduled as EmailItem[];
-        memoryCache.scheduled = scheduled;
-        return scheduled;
+        const raw = (data.value as any).scheduled as EmailItem[];
+        const deduplicated = deduplicateSchedules(raw);
+        memoryCache.scheduled = deduplicated;
+        return deduplicated;
       }
     } catch (err) {
       console.warn('[Storage] Supabase load scheduled emails failed, using local store:', err);
@@ -288,56 +303,36 @@ export async function loadScheduledEmailsAsync(): Promise<EmailItem[]> {
 
   // 2. Return memory cache if explicitly initialized
   if (memoryCache.scheduled !== null && Array.isArray(memoryCache.scheduled)) {
-    return memoryCache.scheduled;
+    return deduplicateSchedules(memoryCache.scheduled);
   }
 
   // 3. Try local file
   try {
     if (fs.existsSync(SCHEDULED_FILE)) {
-      const scheduled: EmailItem[] = JSON.parse(fs.readFileSync(SCHEDULED_FILE, 'utf8'));
-      if (Array.isArray(scheduled)) {
-        memoryCache.scheduled = scheduled;
-        return scheduled;
+      const raw: EmailItem[] = JSON.parse(fs.readFileSync(SCHEDULED_FILE, 'utf8'));
+      if (Array.isArray(raw)) {
+        const deduplicated = deduplicateSchedules(raw);
+        memoryCache.scheduled = deduplicated;
+        return deduplicated;
       }
     }
   } catch (err) {
     console.error('[Storage Error] Failed to read scheduled_emails.json:', err);
   }
 
-  // 4. Initial Migration from existing email_templates.json if SCHEDULED_FILE does not exist
-  try {
-    if (fs.existsSync(TEMPLATES_FILE)) {
-      const existing: EmailItem[] = JSON.parse(fs.readFileSync(TEMPLATES_FILE, 'utf8'));
-      if (Array.isArray(existing)) {
-        // Pick only items that are actual scheduled instances
-        const activeSchedules = existing.filter(it => 
-          (it.id.startsWith('sched_') || it.id.startsWith('resched_')) &&
-          ['SCHEDULED', 'READY', 'PENDING'].includes((it.status || '').toUpperCase())
-        );
-        memoryCache.scheduled = activeSchedules;
-        try {
-          fs.writeFileSync(SCHEDULED_FILE, JSON.stringify(activeSchedules, null, 2), 'utf8');
-        } catch {}
-        return activeSchedules;
-      }
-    }
-  } catch {}
-
-  // 5. Default: Empty array. DO NOT recreate mock or default scheduled items!
   memoryCache.scheduled = [];
   return [];
 }
 
 export function loadScheduledEmailsSync(): EmailItem[] {
   if (memoryCache.scheduled !== null && Array.isArray(memoryCache.scheduled)) {
-    return memoryCache.scheduled;
+    return deduplicateSchedules(memoryCache.scheduled);
   }
   try {
     if (fs.existsSync(SCHEDULED_FILE)) {
-      const scheduled: EmailItem[] = JSON.parse(fs.readFileSync(SCHEDULED_FILE, 'utf8'));
-      if (Array.isArray(scheduled)) {
-        memoryCache.scheduled = scheduled;
-        return scheduled;
+      const raw: EmailItem[] = JSON.parse(fs.readFileSync(SCHEDULED_FILE, 'utf8'));
+      if (Array.isArray(raw)) {
+        return deduplicateSchedules(raw);
       }
     }
   } catch {}
@@ -345,11 +340,12 @@ export function loadScheduledEmailsSync(): EmailItem[] {
 }
 
 export async function saveScheduledEmailsAsync(scheduled: EmailItem[]): Promise<void> {
-  memoryCache.scheduled = scheduled;
+  const cleanScheduled = deduplicateSchedules(scheduled);
+  memoryCache.scheduled = cleanScheduled;
 
   // 1. Write to local file
   try {
-    fs.writeFileSync(SCHEDULED_FILE, JSON.stringify(scheduled, null, 2), 'utf8');
+    fs.writeFileSync(SCHEDULED_FILE, JSON.stringify(cleanScheduled, null, 2), 'utf8');
   } catch (err) {
     console.warn('[Storage] File write skipped (serverless environment):', err);
   }
@@ -359,7 +355,7 @@ export async function saveScheduledEmailsAsync(scheduled: EmailItem[]): Promise<
     try {
       await supabase.from('app_settings').upsert({
         key: 'scheduled_emails',
-        value: { scheduled },
+        value: { scheduled: cleanScheduled },
         updated_at: new Date().toISOString()
       }, { onConflict: 'key' });
     } catch (err) {
@@ -367,7 +363,6 @@ export async function saveScheduledEmailsAsync(scheduled: EmailItem[]): Promise<
     }
   }
 }
-
 export async function deleteScheduledEmailAsync(id: string): Promise<boolean> {
   const current = await loadScheduledEmailsAsync();
   const filtered = current.filter(it => it.id !== id);
