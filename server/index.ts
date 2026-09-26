@@ -456,7 +456,7 @@ cron.schedule('* * * * *', async () => {
       if (diffMinutes <= 0) {
         // If Automation is ON -> Send automatically
         if (config.autoSendEnabled) {
-          if (item.status === 'SCHEDULED' && diffMinutes >= -5) {
+          if ((item.status === 'SCHEDULED' || item.status === 'READY') && diffMinutes >= -15) {
             captureSnapshotForItem(item, { year, name: config.displayName });
             console.log(`[Scheduler] Disposing Scheduled Email ${item.name} (${item.id}) at ${timeStr} IST`);
             item.status = 'SENDING';
@@ -488,7 +488,7 @@ cron.schedule('* * * * *', async () => {
           }
         } else {
           // If Automation is OFF -> Mark as PENDING / MISSED (Do NOT send automatically!)
-          if (item.status === 'SCHEDULED') {
+          if (item.status === 'SCHEDULED' || item.status === 'READY') {
             console.log(`[Scheduler] Automation is OFF. Marking ${item.name} as PENDING (missed at ${timeStr} IST)`);
             item.status = 'PENDING';
             saveEmailData(templates, items);
