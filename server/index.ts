@@ -355,7 +355,26 @@ export async function runSchedulerTick(): Promise<{
     if (dueItems.length > 0) {
       await saveScheduledEmailsAsync(scheduledItems);
     }
+
+    return {
+      checkedCount: scheduledItems.length,
+      sentCount: sentItems.length,
+      sentItems,
+      timestampIST: displayString
+    };
+  } catch (err: any) {
+    console.error('[Scheduler Error]:', err);
+    return {
+      checkedCount: 0,
+      sentCount: 0,
+      skippedReason: `Error: ${err?.message}`,
+      sentItems: [],
+      timestampIST: getIstTime().displayString
+    };
+  } finally {
+    isSchedulerRunning = false;
   }
+}
 
 // -------------------------------------------------------------
 // REST API ENDPOINTS (CONNECTED TO CLOUD DATABASE & VERCEL)
