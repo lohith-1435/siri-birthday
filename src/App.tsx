@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { CelestialBackground } from './components/CelestialBackground';
 import { FilmController } from './components/FilmController';
-import { AdminPanel } from './components/admin/AdminPanel';
+import { AdminPanel, AdminErrorBoundary } from './components/admin/AdminPanel';
 import { CountdownLockScreen } from './components/CountdownLockScreen';
 import { WelcomeAgeModal } from './components/WelcomeAgeModal';
 import { TimeSinceBirthCounter } from './components/TimeSinceBirthCounter';
@@ -229,10 +229,12 @@ export const App: React.FC = () => {
   // 1. Admin Panel View
   if (currentView === 'admin') {
     return (
-      <AdminPanel
-        onBackToFilm={handleBackToFilm}
-        onDataUpdated={fetchPublishedTimeline}
-      />
+      <AdminErrorBoundary onBackToFilm={handleBackToFilm}>
+        <AdminPanel
+          onBackToFilm={handleBackToFilm}
+          onDataUpdated={fetchPublishedTimeline}
+        />
+      </AdminErrorBoundary>
     );
   }
 

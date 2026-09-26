@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import cors from 'cors';
 import nodemailer from 'nodemailer';
 import fs from 'fs';
@@ -379,12 +379,22 @@ app.get('/api/automation/health', async (_req, res) => {
   const sentCount = logs.filter((l) => l.status === 'SENT').length;
   const failedCount = logs.filter((l) => l.status === 'FAILED').length;
 
-  const todaysDispatch = scheduled.find((i) => {
-    if (i.scheduleDate !== dateStr) return false;
-    const [h, m] = (i.scheduleTime || '00:00').split(':').map(Number);
-    const schedMin = h * 60 + m;
-    return schedMin >= currentTotalMinutes;
-  }) || scheduled[0] || null;
+  const todaysScheduled = scheduled.filter((i) => i.scheduleDate === dateStr);
+  const todaysList = todaysScheduled.length > 0 ? todaysScheduled : scheduled.slice(0, 5);
+  const todaysDispatch = todaysList.map((i) => {
+    const dest = resolveDestinationEmail(i.destinationProfile, config);
+    return {
+      id: i.id,
+      time: i.scheduleTime || '11:00',
+      name: i.name,
+      subject: i.subject,
+      destinationProfile: dest.profile,
+      destinationLabel: dest.label,
+      recipientEmail: dest.email,
+      status: i.status || 'SCHEDULED',
+      isSent: i.status === 'SENT'
+    };
+  });
 
   res.json({
     success: true,

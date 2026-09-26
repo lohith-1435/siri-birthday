@@ -1,5 +1,68 @@
 [
   {
+    "id": "resched_system-test-email_1790426197718",
+    "name": "System Verification Test Email",
+    "type": "TEST",
+    "subject": "System Verification Test — SIRI Experience ✦",
+    "heading": "EMAIL AUTOMATION VERIFIED & READY",
+    "topLabel": "SYSTEM INFRASTRUCTURE TEST",
+    "message": "This is a verified delivery test of the SIRI Birthday Automation System.\n\nAll visual styles, champagne gold highlights, dynamic variable replacements, and aliased link CTA buttons are functioning with 100% precision.\n\nGreetings to <span style=\"color: #F3E5AB; font-weight: 700;\">{NAME}</span>.",
+    "recipient": "lohithmedisetti1432004@gmail.com",
+    "websiteUrl": "https://siri-birthday-brown.vercel.app/",
+    "linkAlias": "OPEN THE EXPERIENCE →",
+    "buttonText": "OPEN THE EXPERIENCE →",
+    "scheduleDate": "2026-09-30",
+    "scheduleTime": "08:00 PM",
+    "status": "SCHEDULED",
+    "enabled": true,
+    "destinationProfile": "S1",
+    "customDisplayName": "SIRI BANGARAM",
+    "emailDisplayName": "SIRI BANGARAM",
+    "useGlobalEmailDisplayName": true
+  },
+  {
+    "id": "sched_advance-02_1790426155213_qjek",
+    "name": "Advance 02 — Keep Smiling",
+    "type": "ADVANCE",
+    "subject": "PHONE TEST EMAIL — Rescheduled from Phone",
+    "heading": "A SMILE THAT BRIGHTENS THE WORLD",
+    "topLabel": "ADVANCE BIRTHDAY DISPATCH · II",
+    "message": "There is something truly remarkable about a genuine smile. It softens the world, makes ordinary afternoons memorable, and brings warmth to everyone around.\n\nToday, as your special day approaches, this is just a gentle reminder to keep that beautiful smile glowing. \n\nMay life always be kind to you, and may you never run out of reasons to laugh, to hope, and to celebrate the person you are, <span style=\"color: #F3E5AB; font-weight: 700;\">{NAME}</span>.",
+    "recipient": "mendusiri28@gmail.com",
+    "websiteUrl": "https://siri-birthday-brown.vercel.app/",
+    "linkAlias": "KEEP THE SMILE GLOWING →",
+    "buttonText": "KEEP THE SMILE GLOWING →",
+    "scheduleDate": "2026-09-27",
+    "scheduleTime": "21:00",
+    "status": "SCHEDULED",
+    "enabled": true,
+    "destinationProfile": "S3",
+    "customDisplayName": "SIRI BANGARAM",
+    "emailDisplayName": "SIRI BANGARAM",
+    "useGlobalEmailDisplayName": true
+  },
+  {
+    "id": "sched_advance-01_1790426155201_lgho",
+    "name": "Advance 01 — Something Beautiful is Near",
+    "type": "ADVANCE",
+    "subject": "TEST EMAIL — Laptop Created",
+    "recipient": "lohithmedisetti1432004@gmail.com",
+    "heading": "SOMETHING BEAUTIFUL IS DRAWING NEAR",
+    "topLabel": "ADVANCE BIRTHDAY DISPATCH · I",
+    "message": "Some days quietly pass by without notice, while some special dates arrive with a gentle reminder that life is filled with wonder.\n\nAs September 28 draws closer, this little message comes with a quiet wish for your peace and happiness. May the coming days unfold with gentle warmth, peaceful thoughts, and reasons to look forward to every sunrise.\n\nMay you always have reasons to smile, <span style=\"color: #F3E5AB; font-weight: 700;\">{NAME}</span>.",
+    "websiteUrl": "https://siri-birthday-brown.vercel.app/",
+    "linkAlias": "A LITTLE SOMETHING FOR YOU →",
+    "buttonText": "A LITTLE SOMETHING FOR YOU →",
+    "scheduleDate": "2026-09-27",
+    "scheduleTime": "15:30",
+    "status": "SCHEDULED",
+    "enabled": true,
+    "destinationProfile": "S1",
+    "customDisplayName": "SIRI BANGARAM",
+    "emailDisplayName": "SIRI BANGARAM",
+    "useGlobalEmailDisplayName": true
+  },
+  {
     "id": "resched_system-test-email_1790423494215",
     "name": "System Verification Test Email",
     "type": "TEST",
@@ -80,7 +143,7 @@
     "enabled": true,
     "destinationProfile": "S1",
     "useGlobalEmailDisplayName": true,
-    "sentAt": "2026-09-26T11:51:37.165Z"
+    "sentAt": "2026-09-26T12:36:40.648Z"
   },
   {
     "id": "advance-02",
@@ -428,11 +491,12 @@
     "buttonText": "A MOMENT OF GRATITUDE →",
     "scheduleDate": "2026-09-26",
     "scheduleTime": "17:58",
-    "status": "SCHEDULED",
+    "status": "SENT",
     "enabled": true,
     "destinationProfile": "S1",
     "emailDisplayName": "SIRI BANGARAM",
-    "createdAt": "2026-09-26T11:16:05.371Z"
+    "createdAt": "2026-09-26T11:16:05.371Z",
+    "sentAt": "2026-09-26T12:28:11.997Z"
   },
   {
     "id": "sched_advance-04_1790421381759",
@@ -448,11 +512,12 @@
     "buttonText": "A MOMENT OF GRATITUDE →",
     "scheduleDate": "2026-09-26",
     "scheduleTime": "18:00",
-    "status": "SCHEDULED",
+    "status": "SENT",
     "enabled": true,
     "destinationProfile": "S3",
     "emailDisplayName": "SIRI BANGARAM",
-    "createdAt": "2026-09-26T11:16:21.759Z"
+    "createdAt": "2026-09-26T11:16:21.759Z",
+    "sentAt": "2026-09-26T12:30:11.554Z"
   },
   {
     "id": "sched_advance-08_1790421402542",

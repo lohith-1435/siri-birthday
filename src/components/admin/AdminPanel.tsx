@@ -63,6 +63,15 @@ export interface AdminPanelProps {
 
 export type DestinationProfileKey = 'T1' | 'S1' | 'S2' | 'S3' | 'S4' | 'S5' | 'TEST_1' | 'SENDER_1' | 'SENDER_2' | string;
 
+export const DEFAULT_PROFILES: Record<string, DestinationProfile> = {
+  T1: { id: 'T1', label: 'T1 (Test Profile)', name: 'T1 (Test Profile)', email: 'lohithmedisetti1432004@gmail.com', status: 'ACTIVE', description: 'Test & Verification Destination Profile' },
+  S1: { id: 'S1', label: 'S1 (Primary)', name: 'S1 (Primary Mailbox)', email: 'lohithmedisetti1432004@gmail.com', status: 'ACTIVE', description: 'Primary Live Birthday Dispatch Target' },
+  S2: { id: 'S2', label: 'S2 (Secondary)', name: 'S2 (Secondary Mailbox)', email: 'lohithmedisetti1432004@gmail.com', status: 'ACTIVE', description: 'Secondary Mirror Mailbox' },
+  S3: { id: 'S3', label: 'S3 (Family)', name: 'S3 (Family Mailbox)', email: 'lohithmedisetti1432004@gmail.com', status: 'ACTIVE', description: 'Family & Sacred Moment Mailbox' },
+  S4: { id: 'S4', label: 'S4 (Backup A)', name: 'S4 (Backup Mailbox A)', email: 'lohithmedisetti1432004@gmail.com', status: 'ACTIVE', description: 'Automated Redundant Failover Mailbox' },
+  S5: { id: 'S5', label: 'S5 (Backup B)', name: 'S5 (Backup Mailbox B)', email: 'lohithmedisetti1432004@gmail.com', status: 'ACTIVE', description: 'Cold Archive Delivery Mailbox' }
+};
+
 export interface DestinationProfile {
   id: DestinationProfileKey;
   label: string;
@@ -186,6 +195,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     currentTimeIST: ''
   });
 
+  // Data Fetch Error & Loading State
+  const [dataFetchError, setDataFetchError] = useState<string | null>(null);
+  const [isDataFetching, setIsDataFetching] = useState<boolean>(false);
+
   // Today's Dispatch, Scheduled Items, Templates, Sent Logs
   const [todaysDispatch, setTodaysDispatch] = useState<TodaysDispatchItem[]>([]);
   const [upcomingEmails, setUpcomingEmails] = useState<EmailItem[]>([]);
@@ -240,94 +253,168 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const getProfileEmail = (profKey?: string): string => {
     const p = (profKey || 'T1').toUpperCase().trim().replace(/\s+/g, '_');
     const normalized = p === 'TEST_1' ? 'T1' : p === 'SENDER_1' ? 'S1' : p === 'SENDER_2' ? 'S2' : p;
-    return profiles[normalized]?.email || profiles['T1']?.email || 'lohithmedisetti1432004@gmail.com';
+    return profiles?.[normalized]?.email || profiles?.['T1']?.email || DEFAULT_PROFILES.T1.email;
   };
 
   const getProfileLabel = (profKey?: string): string => {
     const p = (profKey || 'T1').toUpperCase().trim().replace(/\s+/g, '_');
     const normalized = p === 'TEST_1' ? 'T1' : p === 'SENDER_1' ? 'S1' : p === 'SENDER_2' ? 'S2' : p;
-    return profiles[normalized]?.label || normalized;
+    return profiles?.[normalized]?.label || normalized;
   };
 
   // Fetch initial data
   const fetchData = async () => {
+    setIsDataFetching(true);
+    let errorOccurred = false;
+    let lastErrorMsg = '';
+
     try {
       // 1. Config & Names
-      const configRes = await fetch(`${BACKEND_URL}/api/email/config`).then(r => r.json()).catch(() => null);
-      if (configRes?.success) {
-        if (configRes.websiteName) {
-          setWebsiteName(configRes.websiteName);
-          setTempWebsiteName(configRes.websiteName);
+      try {
+        const configRes = await fetch(`${BACKEND_URL}/api/email/config`).then(r => r.json()).catch(() => null);
+        if (configRes?.success) {
+          if (configRes.websiteName) {
+            setWebsiteName(configRes.websiteName);
+            setTempWebsiteName(configRes.websiteName);
+          }
+          if (configRes.emailDisplayName) {
+            setEmailDisplayName(configRes.emailDisplayName);
+            setTempEmailDisplayName(configRes.emailDisplayName);
+          }
+          if (configRes.autoSendEnabled !== undefined) {
+            setAutoSendEnabled(configRes.autoSendEnabled);
+          }
         }
-        if (configRes.emailDisplayName) {
-          setEmailDisplayName(configRes.emailDisplayName);
-          setTempEmailDisplayName(configRes.emailDisplayName);
-        }
-        if (configRes.autoSendEnabled !== undefined) {
-          setAutoSendEnabled(configRes.autoSendEnabled);
-        }
+      } catch (e: any) {
+        errorOccurred = true;
+        lastErrorMsg = e?.message || 'Config load error';
       }
 
       // 2. Recipients
-      const recRes = await fetch(`${BACKEND_URL}/api/admin/recipients`).then(r => r.json()).catch(() => null);
-      if (recRes?.success && recRes.destinations) {
-        setProfiles(recRes.destinations);
+      try {
+        const recRes = await fetch(`${BACKEND_URL}/api/admin/recipients`).then(r => r.json()).catch(() => null);
+        if (recRes?.success && recRes.destinations && typeof recRes.destinations === 'object') {
+          setProfiles(recRes.destinations);
+        }
+      } catch (e: any) {
+        errorOccurred = true;
+        lastErrorMsg = e?.message || 'Recipients load error';
       }
 
       // 3. Health & Upcoming 5 & Today's Dispatch
-      const healthRes = await fetch(`${BACKEND_URL}/api/automation/health`).then(r => r.json()).catch(() => null);
-      if (healthRes?.success) {
-        setHealthData(healthRes);
-        if (healthRes.upcomingFive) {
-          setUpcomingEmails(healthRes.upcomingFive);
+      try {
+        const healthRes = await fetch(`${BACKEND_URL}/api/automation/health`).then(r => r.json()).catch(() => null);
+        if (healthRes?.success) {
+          setHealthData(healthRes);
+          if (Array.isArray(healthRes.upcomingFive)) {
+            setUpcomingEmails(healthRes.upcomingFive);
+          }
+          if (Array.isArray(healthRes.todaysDispatch)) {
+            setTodaysDispatch(healthRes.todaysDispatch);
+          } else if (healthRes.todaysDispatch && typeof healthRes.todaysDispatch === 'object') {
+            const it = healthRes.todaysDispatch;
+            setTodaysDispatch([{
+              id: it.id || 'today_1',
+              time: it.scheduleTime || it.time || '11:00',
+              name: it.name || 'Scheduled Dispatch',
+              type: it.type || 'ADVANCE',
+              subject: it.subject || '',
+              destinationProfile: it.destinationProfile || 'S1',
+              destinationLabel: it.destinationLabel || 'S1',
+              recipientEmail: it.recipient || '',
+              status: it.status || 'SCHEDULED',
+              isSent: Boolean(it.isSent)
+            }]);
+          } else {
+            setTodaysDispatch([]);
+          }
+          if (healthRes.automationEnabled !== undefined) {
+            setAutoSendEnabled(healthRes.automationEnabled);
+          }
         }
-        if (healthRes.todaysDispatch) {
-          setTodaysDispatch(healthRes.todaysDispatch);
-        }
-        if (healthRes.automationEnabled !== undefined) {
-          setAutoSendEnabled(healthRes.automationEnabled);
-        }
+      } catch (e: any) {
+        errorOccurred = true;
+        lastErrorMsg = e?.message || 'Health check error';
       }
 
       // 4. Scheduled Instances
-      const schedRes = await fetch(`${BACKEND_URL}/api/email/scheduled`).then(r => r.json()).catch(() => null);
-      if (schedRes?.success && schedRes.scheduled) {
-        setScheduledItems(schedRes.scheduled);
+      try {
+        const schedRes = await fetch(`${BACKEND_URL}/api/email/scheduled`).then(r => r.json()).catch(() => null);
+        if (schedRes?.success && Array.isArray(schedRes.scheduled)) {
+          setScheduledItems(schedRes.scheduled);
+        }
+      } catch (e: any) {
+        errorOccurred = true;
+        lastErrorMsg = e?.message || 'Scheduled items error';
       }
 
       // 5. Master Templates Library
-      const templatesRes = await fetch(`${BACKEND_URL}/api/email/templates`).then(r => r.json()).catch(() => null);
-      if (templatesRes?.success && templatesRes.templates) {
-        setTemplatesList(templatesRes.templates);
-      } else {
-        setTemplatesList(DEFAULT_EMAIL_ITEMS);
+      try {
+        const templatesRes = await fetch(`${BACKEND_URL}/api/email/templates`).then(r => r.json()).catch(() => null);
+        if (templatesRes?.success && Array.isArray(templatesRes.templates) && templatesRes.templates.length > 0) {
+          setTemplatesList(templatesRes.templates);
+        } else {
+          setTemplatesList(DEFAULT_EMAIL_ITEMS);
+        }
+      } catch (e: any) {
+        errorOccurred = true;
+        lastErrorMsg = e?.message || 'Templates load error';
       }
 
       // 6. Sent Logs
-      const sentRes = await fetch(`${BACKEND_URL}/api/email/sent`).then(r => r.json()).catch(() => null);
-      if (sentRes?.success) {
-        setSentEmails(sentRes.sentEmails || []);
+      try {
+        const sentRes = await fetch(`${BACKEND_URL}/api/email/sent`).then(r => r.json()).catch(() => null);
+        if (sentRes?.success && Array.isArray(sentRes.sentEmails)) {
+          setSentEmails(sentRes.sentEmails);
+        }
+      } catch (e: any) {
+        errorOccurred = true;
+        lastErrorMsg = e?.message || 'Sent logs load error';
       }
 
       // 7. Activity Logs
-      const actRes = await fetch(`${BACKEND_URL}/api/automation/activity`).then(r => r.json()).catch(() => null);
-      if (actRes?.success) {
-        setActivityLogs(actRes.activities || []);
+      try {
+        const actRes = await fetch(`${BACKEND_URL}/api/automation/activity`).then(r => r.json()).catch(() => null);
+        if (actRes?.success && Array.isArray(actRes.activities)) {
+          setActivityLogs(actRes.activities);
+        }
+      } catch (e: any) {
+        errorOccurred = true;
+        lastErrorMsg = e?.message || 'Activity logs error';
       }
 
       // 8. Snapshots
-      const snapRes = await fetch(`${BACKEND_URL}/api/reference-snapshots`).then(r => r.json()).catch(() => null);
-      if (snapRes?.success && snapRes.snapshots) {
-        setSnapshotsList(snapRes.snapshots);
+      try {
+        const snapRes = await fetch(`${BACKEND_URL}/api/reference-snapshots`).then(r => r.json()).catch(() => null);
+        if (snapRes?.success && snapRes.snapshots && typeof snapRes.snapshots === 'object') {
+          setSnapshotsList(snapRes.snapshots);
+        }
+      } catch (e: any) {
+        errorOccurred = true;
+        lastErrorMsg = e?.message || 'Snapshots load error';
       }
 
       // 9. Missed Items
-      const missedRes = await fetch(`${BACKEND_URL}/api/email/pending-missed`).then(r => r.json()).catch(() => null);
-      if (missedRes?.success && missedRes.pendingItems) {
-        setMissedItems(missedRes.pendingItems);
+      try {
+        const missedRes = await fetch(`${BACKEND_URL}/api/email/pending-missed`).then(r => r.json()).catch(() => null);
+        if (missedRes?.success && Array.isArray(missedRes.pendingItems)) {
+          setMissedItems(missedRes.pendingItems);
+        }
+      } catch (e: any) {
+        errorOccurred = true;
+        lastErrorMsg = e?.message || 'Missed items error';
       }
-    } catch (err) {
+
+      if (errorOccurred) {
+        setDataFetchError(lastErrorMsg || 'Network synchronization issue');
+      } else {
+        setDataFetchError(null);
+      }
+    } catch (err: any) {
       console.error('Error fetching admin data:', err);
+      setDataFetchError(err?.message || 'Unable to connect to Admin Server');
+    } finally {
+      setIsDataFetching(false);
     }
   };
 
@@ -860,6 +947,26 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       {/* MAIN CONTAINER */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
 
+        {dataFetchError && (
+          <div className="bg-red-950/40 border border-red-500/40 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-red-200 animate-fadeIn">
+            <div className="flex items-center gap-2.5">
+              <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0" />
+              <div>
+                <strong className="text-amber-200 block text-xs">Unable to load Admin Data</strong>
+                <span className="text-[11px] text-red-300/80 font-mono">{dataFetchError}</span>
+              </div>
+            </div>
+            <button
+              onClick={fetchData}
+              disabled={isDataFetching}
+              className="px-3.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold rounded-lg transition-colors flex items-center gap-1.5 flex-shrink-0"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isDataFetching ? 'animate-spin' : ''}`} />
+              Retry
+            </button>
+          </div>
+        )}
+
         {/* ========================================================================= */}
         {/* SLICER NAVIGATION BAR                                                     */}
         {/* ========================================================================= */}
@@ -955,7 +1062,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <AtSign className="w-3.5 h-3.5 text-amber-400" /> Next Recipient Mailbox
                     </p>
                     <h3 className="text-sm font-semibold text-amber-200 mt-1 font-mono break-all line-clamp-2">
-                      {upcomingEmails[0] ? getProfileEmail(upcomingEmails[0].destinationProfile) : (profiles.S1?.email || '--')}
+                      {upcomingEmails[0] ? getProfileEmail(upcomingEmails[0].destinationProfile) : (profiles?.S1?.email || DEFAULT_PROFILES.S1.email)}
                     </h3>
                   </div>
                   <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-xs text-amber-400/70">
@@ -1061,7 +1168,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5">
-                        {todaysDispatch.map((item) => (
+                        {(Array.isArray(todaysDispatch) ? todaysDispatch : []).map((item) => (
                           <tr key={item.id} className="hover:bg-white/[0.02] transition-colors">
                             <td className="py-3.5 px-3 font-mono font-bold text-amber-300 text-sm">
                               {item.time} IST
@@ -1135,7 +1242,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {templatesList.map((tmpl) => (
+                {(Array.isArray(templatesList) ? templatesList : []).map((tmpl) => (
                   <div
                     key={tmpl.id}
                     onClick={() => handleOpenTemplateConfig(tmpl)}
@@ -1236,7 +1343,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
-                      {scheduledItems.map((item) => (
+                      {(Array.isArray(scheduledItems) ? scheduledItems : []).map((item) => (
                         <tr key={item.id} className="hover:bg-white/[0.02] transition-colors">
                           <td className="py-3.5 px-3 font-mono font-bold text-amber-300 text-sm whitespace-nowrap">
                             {item.scheduleDate} — {item.scheduleTime} IST
@@ -1324,7 +1431,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     No upcoming scheduled emails in queue.
                   </div>
                 ) : (
-                  upcomingEmails.map((item, idx) => (
+                  (Array.isArray(upcomingEmails) ? upcomingEmails : []).map((item, idx) => (
                     <div
                       key={item.id}
                       className="bg-[#140c1a] border border-amber-500/20 hover:border-amber-400/40 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all shadow-lg"
@@ -1417,7 +1524,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
-                      {sentEmails.map((log) => (
+                      {(Array.isArray(sentEmails) ? sentEmails : []).map((log) => (
                         <tr key={log.id} className="hover:bg-white/[0.02] transition-colors">
                           <td className="py-3.5 px-3 font-mono text-amber-300 text-xs whitespace-nowrap">
                             {log.sentDate} — {log.sentTime} IST
@@ -1665,7 +1772,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   {activityLogs.length === 0 ? (
                     <p className="text-center text-amber-400/50 py-4">No events logged yet.</p>
                   ) : (
-                    activityLogs.map((act) => (
+                    (Array.isArray(activityLogs) ? activityLogs : []).map((act) => (
                       <div key={act.id} className="p-2 rounded bg-black/40 border border-white/5 flex items-start justify-between gap-4">
                         <div>
                           <span className="text-amber-400/60 text-[10px] block">{act.timestamp}</span>
@@ -1866,7 +1973,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 Immutable snapshots preserve the exact visual design and rendered content of each template at the time of capture.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {templatesList.slice(0, 8).map((tmpl) => (
+                {(Array.isArray(templatesList) ? templatesList.slice(0, 8) : []).map((tmpl) => (
                   <div key={tmpl.id} className="p-3 rounded-lg bg-[#140c1a] border border-white/5 flex items-center justify-between gap-2">
                     <span className="text-xs font-semibold text-amber-200 truncate">{tmpl.name}</span>
                     <button
@@ -2347,7 +2454,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
 
             <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
-              {healthReport.checks.map((c, i) => (
+              {(Array.isArray(healthReport?.checks) ? healthReport.checks : []).map((c, i) => (
                 <div key={i} className="p-3 rounded-lg bg-black/40 border border-white/5 flex items-start justify-between gap-3 text-xs">
                   <div>
                     <strong className="text-amber-200 block">{c.name}</strong>
@@ -2377,3 +2484,71 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     </div>
   );
 };
+
+
+export class AdminErrorBoundary extends React.Component<
+  { children: React.ReactNode; onBackToFilm?: () => void },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode; onBackToFilm?: () => void }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('[AdminErrorBoundary caught runtime error]:', error, errorInfo);
+  }
+
+  handleRetry = () => {
+    this.setState({ hasError: false, error: null });
+    window.location.reload();
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-[#08040a] text-[#FAF8F5] flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-[#120a17] border border-amber-500/40 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-5 text-center">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+            <div>
+              <h2 className="text-xl font-serif font-bold text-amber-100">Unable to load Admin Data</h2>
+              <p className="text-xs text-amber-400/70 mt-1">
+                The Admin Portal encountered a runtime error during data synchronization.
+              </p>
+            </div>
+            <div className="p-3 rounded-lg bg-black/60 border border-white/5 text-left">
+              <p className="text-[10px] text-amber-500 font-mono font-bold uppercase tracking-wider">Technical Status Message</p>
+              <p className="text-xs text-red-300/90 font-mono mt-1 break-all">
+                {this.state.error?.message || 'Unknown runtime error'}
+              </p>
+            </div>
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                onClick={this.handleRetry}
+                className="px-5 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 text-black font-bold rounded-xl text-xs hover:brightness-110 shadow-lg flex items-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Retry
+              </button>
+              {this.props.onBackToFilm && (
+                <button
+                  onClick={this.props.onBackToFilm}
+                  className="px-4 py-2.5 bg-white/5 border border-amber-500/20 text-amber-300 font-medium rounded-xl text-xs hover:bg-white/10"
+                >
+                  Return to Experience
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
