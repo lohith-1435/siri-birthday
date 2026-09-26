@@ -38,7 +38,21 @@ import {
   type ReferenceSnapshot
 } from '../../../server/emailTemplates';
 
-const BACKEND_URL = 'http://127.0.0.1:3001';
+export const getBackendUrl = (): string => {
+  const envUrl = (import.meta as unknown as { env?: Record<string, string> })?.env?.VITE_BACKEND_URL;
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim() !== '') {
+    return envUrl.replace(/\/+$/, '');
+  }
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host !== 'localhost' && host !== '127.0.0.1') {
+      return '';
+    }
+  }
+  return 'http://127.0.0.1:3001';
+};
+
+const BACKEND_URL = getBackendUrl();
 
 export interface AdminPanelProps {
   onBackToFilm?: () => void;

@@ -21,19 +21,19 @@
     "id": "S2",
     "label": "S2",
     "name": "S2 (Secondary Sender)",
-    "email": "lohithmedisetti1432004@gmail.com",
+    "email": "lohithmedisetti0305@gmail.com",
     "status": "ACTIVE",
     "description": "Secondary Recipient Profile",
-    "updatedAt": "2026-09-26T08:41:25.634Z"
+    "updatedAt": "2026-09-26T11:04:50.015Z"
   },
   {
     "id": "S3",
     "label": "S3",
     "name": "S3 (Special Sender 3)",
-    "email": "lohithmedisetti1432004@gmail.com",
+    "email": "mendusiri28@gmail.com",
     "status": "ACTIVE",
     "description": "Dedicated Recipient Profile 3",
-    "updatedAt": "2026-09-26T08:41:25.634Z"
+    "updatedAt": "2026-09-26T11:05:12.950Z"
   },
   {
     "id": "S4",
@@ -52,5 +52,14 @@
     "status": "ACTIVE",
     "description": "Dedicated Recipient Profile 5",
     "updatedAt": "2026-09-26T08:41:25.634Z"
+  },
+  {
+    "id": "REC_TEST_7",
+    "label": "REC_TEST_7",
+    "name": "✦ TEST RECIPIENT ✦",
+    "status": "ACTIVE",
+    "description": "",
+    "email": "test_independent@gmail.com",
+    "updatedAt": "2026-09-26T11:51:31.207Z"
   }
 ]
