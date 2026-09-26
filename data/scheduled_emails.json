@@ -1,1 +1,44 @@
-[]
+[
+  {
+    "id": "sched_advance-07_1790446321882_24kf",
+    "name": "Advance 07 — You Deserve Beautiful Things",
+    "type": "ADVANCE",
+    "status": "SCHEDULED",
+    "enabled": true,
+    "heading": "BECAUSE YOU DESERVE THE BEST OF LIFE",
+    "message": "You deserve people in your life who genuinely value your presence, moments that make your soul feel at ease, and opportunities that honor your talents and dedication.\n\nNever forget the worth of the goodness you bring into the lives around you.\n\nThis afternoon, we send you a heartfelt wish that all the kindness you give to others returns to you multiplied in countless ways, <span style=\"color: #F3E5AB; font-weight: 700;\">{NAME}</span>.",
+    "subject": "You deserve all beautiful things, SIRI 🌸",
+    "topLabel": "ADVANCE BIRTHDAY DISPATCH · VII",
+    "linkAlias": "A LITTLE WISH FOR YOU →",
+    "recipient": "lohithmedisetti1432004@gmail.com",
+    "buttonText": "A LITTLE WISH FOR YOU →",
+    "websiteUrl": "https://siri-birthday-brown.vercel.app/",
+    "scheduleDate": "2026-09-26",
+    "scheduleTime": "23:46",
+    "emailDisplayName": "SIRI BANGARAM",
+    "customDisplayName": "SIRI BANGARAM",
+    "destinationProfile": "S1",
+    "useGlobalEmailDisplayName": true
+  },
+  {
+    "id": "sched_advance-07_1790445987351_qk14",
+    "name": "Advance 07 — You Deserve Beautiful Things",
+    "type": "ADVANCE",
+    "status": "SCHEDULED",
+    "enabled": true,
+    "heading": "BECAUSE YOU DESERVE THE BEST OF LIFE",
+    "message": "You deserve people in your life who genuinely value your presence, moments that make your soul feel at ease, and opportunities that honor your talents and dedication.\n\nNever forget the worth of the goodness you bring into the lives around you.\n\nThis afternoon, we send you a heartfelt wish that all the kindness you give to others returns to you multiplied in countless ways, <span style=\"color: #F3E5AB; font-weight: 700;\">{NAME}</span>.",
+    "subject": "You deserve all beautiful things, SIRI 🌸",
+    "topLabel": "ADVANCE BIRTHDAY DISPATCH · VII",
+    "linkAlias": "A LITTLE WISH FOR YOU →",
+    "recipient": "mendusiri28@gmail.com",
+    "buttonText": "A LITTLE WISH FOR YOU →",
+    "websiteUrl": "https://siri-birthday-brown.vercel.app/",
+    "scheduleDate": "2026-09-27",
+    "scheduleTime": "00:00",
+    "emailDisplayName": "SIRI BANGARAM",
+    "customDisplayName": "SIRI BANGARAM",
+    "destinationProfile": "S3",
+    "useGlobalEmailDisplayName": true
+  }
+]
