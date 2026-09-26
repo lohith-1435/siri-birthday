@@ -10,6 +10,7 @@
  */
 
 export interface EmailItem {
+  destinationProfile?: 'T1' | 'S1' | 'S2' | 'S3' | 'S4' | 'S5' | 'TEST_1' | 'SENDER_1' | 'SENDER_2' | string;
   id: string;
   name: string;
   type: 'TEST' | 'ADVANCE' | 'BIRTHDAY' | 'BIRTH MOMENT' | 'TITHI' | 'CUSTOM' | string;
@@ -518,16 +519,17 @@ export const DEFAULT_EMAIL_TEMPLATES: AllEmailTemplates = {
  */
 
 export function formatGoldenName(name: string): string {
-  if (!name) return '✦ S I R I ✦';
-  const clean = name.trim().toUpperCase();
-  const words = clean.split(/\s+/);
-  return '✦ ' + words.map(w => w.split('').join(' ')).join('   ') + ' ✦';
+  if (!name) return 'SIRI BANGARAM';
+  // Strip any accidental leading/trailing decorative diamonds/stars so it never double wraps
+  const cleaned = name.replace(/^[✦✧\s*]+|[✦✧\s*]+$/g, '').trim();
+  return cleaned || name.trim();
 }
 
 export function replaceEmailVariables(
   text: string,
   context: {
-    name?: string;
+    name?: string;               // Website Display Name / Celebrant (e.g. "SIRI")
+    emailDisplayName?: string;   // Email Identity / Golden Signature (e.g. "SIRI BANGARAM")
     year?: number;
     age?: number;
     tithiName?: string;
@@ -536,7 +538,8 @@ export function replaceEmailVariables(
     linkAlias?: string;
   }
 ): string {
-  const name = context.name || 'SIRI';
+  const recipientName = (context.name || 'SIRI').trim();
+  const emailDisplayName = (context.emailDisplayName || 'SIRI BANGARAM').trim();
   const year = String(context.year || 2026);
   const age = String(context.age || (context.year ? context.year - 2003 : 23));
   const tithiName = context.tithiName || 'Ashwayuja Shukla Tritiya';
@@ -545,7 +548,12 @@ export function replaceEmailVariables(
   const websiteUrl = context.websiteUrl || DEFAULT_WEBSITE_URL;
 
   return text
-    .replace(/\{NAME\}/g, name)
+    .replace(/\{NAME\}/g, recipientName)
+    .replace(/\{RECIPIENT_NAME\}/g, recipientName)
+    .replace(/\{WEBSITE_NAME\}/g, recipientName)
+    .replace(/\{EMAIL_DISPLAY_NAME\}/g, emailDisplayName)
+    .replace(/\{GOLDEN_NAME\}/g, emailDisplayName)
+    .replace(/\{SIGNATURE\}/g, emailDisplayName)
     .replace(/\{YEAR\}/g, year)
     .replace(/\{AGE\}/g, age)
     .replace(/\{TITHI_NAME\}/g, tithiName)
@@ -578,35 +586,77 @@ export function generateEmailHtml(
     type?: string;
     useGlobalEmailDisplayName?: boolean;
     customDisplayName?: string;
+    emailDisplayName?: string;
   },
   context: {
-    name?: string;
-    emailDisplayName?: string;
+    name?: string;              // Website Display Name (e.g. SIRI)
+    emailDisplayName?: string;  // Email Display Name (e.g. SIRI BANGARAM)
     year?: number;
     age?: number;
     tithiName?: string;
     scheduledDate?: string;
   } = {}
 ): string {
-  // Determine effective email display name (per-email override vs global emailDisplayName)
-  const effectiveEmailDisplayName = (item.useGlobalEmailDisplayName === false && item.customDisplayName && item.customDisplayName.trim())
-    ? item.customDisplayName.trim()
-    : (context.emailDisplayName || context.name || 'SIRI BANGARAM');
+  // SINGLE SOURCE OF TRUTH FOR EMAIL IDENTITY:
+  const rawEmailDisplayName = (context.emailDisplayName && context.emailDisplayName.trim())
+    || (item.useGlobalEmailDisplayName === false && item.customDisplayName && item.customDisplayName.trim())
+    || 'SIRI BANGARAM';
+
+  const effectiveEmailDisplayName = rawEmailDisplayName.trim();
+  const websiteRecipientName = (context.name && context.name.trim()) || 'SIRI';
 
   const goldenHeaderName = formatGoldenName(effectiveEmailDisplayName);
 
   const websiteUrl = (item.websiteUrl || DEFAULT_WEBSITE_URL).trim();
   const rawAlias = item.linkAlias || item.buttonText || DEFAULT_LINK_ALIAS;
-  const linkAlias = replaceEmailVariables(rawAlias, { ...context, name: effectiveEmailDisplayName });
-  const rawButtonText = item.buttonText || item.linkAlias || 'ENTER YOUR STORY →';
-  const buttonText = replaceEmailVariables(rawButtonText, { ...context, name: effectiveEmailDisplayName });
+  const linkAlias = replaceEmailVariables(rawAlias, {
+    ...context,
+    name: websiteRecipientName,
+    emailDisplayName: effectiveEmailDisplayName,
+    websiteUrl
+  });
 
-  const subject = replaceEmailVariables(item.subject || 'The Day Has Arrived, SIRI ✨', { ...context, name: effectiveEmailDisplayName, websiteUrl, linkAlias });
-  const heading = replaceEmailVariables(item.heading || 'HAPPY BIRTHDAY, SIRI', { ...context, name: effectiveEmailDisplayName, websiteUrl, linkAlias });
-  const topLabel = replaceEmailVariables(item.topLabel || 'CELESTIAL DISPATCH', { ...context, name: effectiveEmailDisplayName, websiteUrl, linkAlias });
+  const rawButtonText = item.buttonText || item.linkAlias || 'ENTER YOUR STORY →';
+  const buttonText = replaceEmailVariables(rawButtonText, {
+    ...context,
+    name: websiteRecipientName,
+    emailDisplayName: effectiveEmailDisplayName,
+    websiteUrl,
+    linkAlias
+  });
+
+  const subject = replaceEmailVariables(item.subject || 'The Day Has Arrived, SIRI ✦', {
+    ...context,
+    name: websiteRecipientName,
+    emailDisplayName: effectiveEmailDisplayName,
+    websiteUrl,
+    linkAlias
+  });
+
+  const heading = replaceEmailVariables(item.heading || 'HAPPY BIRTHDAY, SIRI', {
+    ...context,
+    name: websiteRecipientName,
+    emailDisplayName: effectiveEmailDisplayName,
+    websiteUrl,
+    linkAlias
+  });
+
+  const topLabel = replaceEmailVariables(item.topLabel || 'CELESTIAL DISPATCH', {
+    ...context,
+    name: websiteRecipientName,
+    emailDisplayName: effectiveEmailDisplayName,
+    websiteUrl,
+    linkAlias
+  });
 
   const rawMessage = item.message || '';
-  const processedMessage = replaceEmailVariables(rawMessage, { ...context, name: effectiveEmailDisplayName, websiteUrl, linkAlias });
+  const processedMessage = replaceEmailVariables(rawMessage, {
+    ...context,
+    name: websiteRecipientName,
+    emailDisplayName: effectiveEmailDisplayName,
+    websiteUrl,
+    linkAlias
+  });
 
   // Format paragraphs with luxury styling
   const formattedParagraphs = processedMessage
@@ -615,8 +665,8 @@ export function generateEmailHtml(
     .join('');
 
   const signatureNameHtml = `
-    <div style="font-family: 'Cinzel', Georgia, serif; font-size: 22px; font-weight: 900; letter-spacing: 5px; color: #F5E6B3; text-shadow: 0 0 15px rgba(212,175,55,0.7), 0 0 30px rgba(212,175,55,0.4); text-transform: uppercase;">
-      ${goldenHeaderName}
+    <div style="font-family: 'Cinzel', Georgia, serif; font-size: 22px; font-weight: 900; letter-spacing: 2px; color: #F5E6B3; text-shadow: 0 0 15px rgba(212,175,55,0.7), 0 0 30px rgba(212,175,55,0.4);">
+      ✦ ${goldenHeaderName} ✦
     </div>
   `;
 
@@ -653,7 +703,7 @@ export function generateEmailHtml(
           <tr>
             <td align="center" style="padding: 42px 30px 24px 30px; border-bottom: 1px solid rgba(197,160,89,0.25);">
               <div style="width: 54px; height: 54px; border-radius: 50%; border: 1px solid #D4AF37; line-height: 54px; text-align: center; color: #F3E5AB; font-size: 22px; font-weight: bold; margin-bottom: 18px; background: radial-gradient(circle, rgba(212,175,55,0.25) 0%, rgba(212,175,55,0.05) 100%); box-shadow: 0 0 22px rgba(212,175,55,0.35);">
-                👑
+                ✨
               </div>
               <p style="margin: 0 0 8px 0; font-size: 11px; letter-spacing: 4.5px; color: #D4AF37; text-transform: uppercase; font-weight: 700; font-family: 'Cinzel', Georgia, serif;">
                 ${topLabel}
@@ -699,7 +749,7 @@ export function generateEmailHtml(
           <!-- Celestial Separator -->
           <tr>
             <td align="center" style="padding: 22px 0 12px 0; color: #8F7745; font-size: 11px; letter-spacing: 8px;">
-              ✦ &nbsp; ✧ &nbsp; ✵ &nbsp; ✧ &nbsp; ✦
+              ✦ &nbsp; ✧ &nbsp; ✦ &nbsp; ✧ &nbsp; ✦
             </td>
           </tr>
 
@@ -767,3 +817,5 @@ export function generateTestEmailHtml(customTemplate?: CustomEmailTemplateConfig
 export function generateBirthdayEmailHtml(customTemplate?: CustomEmailTemplateConfig, context: any = {}): string {
   return generateBirthdayMidnightEmailHtml(customTemplate, context);
 }
+
+export const renderSiriEmailHtml = generateEmailHtml;

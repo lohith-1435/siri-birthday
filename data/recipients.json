@@ -1,0 +1,56 @@
+[
+  {
+    "id": "T1",
+    "label": "T1",
+    "name": "T1 (Test Profile)",
+    "email": "lohithmedisetti1432004@gmail.com",
+    "status": "ACTIVE",
+    "description": "Test & Verification Destination Profile",
+    "updatedAt": "2026-09-26T08:41:25.633Z"
+  },
+  {
+    "id": "S1",
+    "label": "S1",
+    "name": "S1 (Primary Sender)",
+    "email": "lohithmedisetti1432004@gmail.com",
+    "status": "ACTIVE",
+    "description": "Primary Personal Recipient Profile",
+    "updatedAt": "2026-09-26T08:41:25.634Z"
+  },
+  {
+    "id": "S2",
+    "label": "S2",
+    "name": "S2 (Secondary Sender)",
+    "email": "lohithmedisetti1432004@gmail.com",
+    "status": "ACTIVE",
+    "description": "Secondary Recipient Profile",
+    "updatedAt": "2026-09-26T08:41:25.634Z"
+  },
+  {
+    "id": "S3",
+    "label": "S3",
+    "name": "S3 (Special Sender 3)",
+    "email": "lohithmedisetti1432004@gmail.com",
+    "status": "ACTIVE",
+    "description": "Dedicated Recipient Profile 3",
+    "updatedAt": "2026-09-26T08:41:25.634Z"
+  },
+  {
+    "id": "S4",
+    "label": "S4",
+    "name": "S4 (Special Sender 4)",
+    "email": "lohithmedisetti1432004@gmail.com",
+    "status": "ACTIVE",
+    "description": "Dedicated Recipient Profile 4",
+    "updatedAt": "2026-09-26T08:41:25.634Z"
+  },
+  {
+    "id": "S5",
+    "label": "S5",
+    "name": "S5 (Special Sender 5)",
+    "email": "lohithmedisetti1432004@gmail.com",
+    "status": "ACTIVE",
+    "description": "Dedicated Recipient Profile 5",
+    "updatedAt": "2026-09-26T08:41:25.634Z"
+  }
+]

@@ -33,3 +33,5 @@ data/tithi_dates.json
 data/admin_auth.json
 data/automation_history.json
 data/reference_snapshots.json
+
+data/automation_activity.json
