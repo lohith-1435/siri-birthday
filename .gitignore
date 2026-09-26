@@ -29,3 +29,7 @@ data/tithi_dates.json
 *.sln
 *.sw?
 
+
+data/admin_auth.json
+data/automation_history.json
+data/reference_snapshots.json

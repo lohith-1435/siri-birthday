@@ -1,3 +1,4 @@
+export type { TithiDateRecord, EmailLogRecord } from '../lib/supabase';
 import { supabase, isSupabaseConfigured, type TithiDateRecord, type EmailLogRecord } from '../lib/supabase';
 
 // Verified Initial Dataset through 2030
