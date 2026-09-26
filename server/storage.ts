@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
@@ -11,6 +13,7 @@ import {
 // Resolve Data Directory safely across Local, Docker, and Vercel Serverless
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+try { dotenv.config({ path: path.resolve(__dirname, '../.env') }); } catch {}
 const candidateDataDir = path.resolve(__dirname, '../data');
 export const DATA_DIR = fs.existsSync(candidateDataDir)
   ? candidateDataDir
