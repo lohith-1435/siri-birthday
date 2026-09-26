@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { audioEngine } from '../../utils/audioEngine';
 import { type TithiDateRecord } from '../../services/tithiService';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import {
   DEFAULT_EMAIL_ITEMS,
   DEFAULT_WEBSITE_URL,
@@ -245,6 +246,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isPreviewLoading, setIsPreviewLoading] = useState<boolean>(false);
 
   // SCHEDULE CONFIRMATION MODAL
+  const [showClearAllModal, setShowClearAllModal] = useState<boolean>(false);
+  const [isClearingAll, setIsClearingAll] = useState<boolean>(false);
+  const [clearAllError, setClearAllError] = useState<string>('');
   const [showScheduleConfirmModal, setShowScheduleConfirmModal] = useState<boolean>(false);
 
   // RESCHEDULE SCHEDULED INSTANCE MODAL (In-place update)
@@ -865,6 +869,62 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // ---------------------------------------------------------------------------
   // REMOVE / CANCEL SCHEDULED INSTANCE (Leaves master templates untouched)
   // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // PERMANENT CLEAR ALL SCHEDULED EMAILS (Database & Supabase execution)
+  // ---------------------------------------------------------------------------
+  const handleClearAllScheduledEmails = async () => {
+    setIsClearingAll(true);
+    setClearAllError('');
+    try {
+      let success = false;
+      
+      // 1. Call Backend API
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/email/scheduled/clear-all`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (data?.success) {
+          success = true;
+        }
+      } catch (apiErr) {
+        console.warn('Backend API clear all failed, attempting direct Supabase:', apiErr);
+      }
+
+      // 2. Direct Supabase Cloud DB Execution & Verification
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const { error } = await supabase.from('app_settings').upsert({
+            key: 'scheduled_emails',
+            value: { scheduled: [] },
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'key' });
+
+          if (!error) {
+            success = true;
+          }
+        } catch (sbErr) {
+          console.error('Direct Supabase clear all failed:', sbErr);
+        }
+      }
+
+      if (success) {
+        setScheduledItems([]);
+        setShowClearAllModal(false);
+        audioEngine.playSacredChime(520);
+        await fetchData();
+      } else {
+        setClearAllError('Failed to clear scheduled emails from database. Please check connection.');
+      }
+    } catch (err: any) {
+      console.error('Error clearing all scheduled emails:', err);
+      setClearAllError(err?.message || 'Failed to clear scheduled emails');
+    } finally {
+      setIsClearingAll(false);
+    }
+  };
+
   const handleRemoveScheduledInstance = async (id: string) => {
     if (!window.confirm('Are you sure you want to remove this scheduled email instance? (The master template in Email Templates will remain untouched.)')) {
       return;
@@ -1447,10 +1507,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     All actual scheduled email instances chronologically queued for automated dispatch.
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs font-mono text-amber-300 bg-amber-500/10 px-3 py-1 rounded-lg border border-amber-500/30">
                     {scheduledItems.length} Scheduled Instances
                   </span>
+                  <button
+                    onClick={() => {
+                      setClearAllError('');
+                      setShowClearAllModal(true);
+                    }}
+                    disabled={isClearingAll || scheduledItems.length === 0}
+                    className="px-3 py-1.5 bg-red-950/40 hover:bg-red-900/60 border border-red-500/40 text-red-300 font-bold text-xs rounded-lg transition-all flex items-center gap-1.5 shadow disabled:opacity-30 disabled:cursor-not-allowed hover:border-red-400"
+                    title="Permanently remove all currently scheduled email instances"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-red-400" /> Clear All
+                  </button>
                   <button
                     onClick={() => setActiveTab('templates')}
                     className="px-3 py-1.5 bg-amber-500 text-black font-bold text-xs rounded-lg hover:bg-amber-400 flex items-center gap-1"

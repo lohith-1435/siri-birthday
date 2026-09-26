@@ -33,6 +33,7 @@ import {
   loadScheduledEmailsAsync,
   saveScheduledEmailsAsync,
   deleteScheduledEmailAsync,
+  clearAllScheduledEmailsAsync,
   upsertScheduledEmailAsync,
   loadEmailTemplatesAsync,
   loadEmailConfigAsync,
@@ -317,15 +318,15 @@ export async function runSchedulerTick(): Promise<{
       return { checkedCount: 0, sentCount: 0, skippedReason: 'Automation switch is OFF', sentItems: [], timestampIST: displayString };
     }
 
-    const { items } = await loadEmailDataAsync();
+    const scheduledItems = await loadScheduledEmailsAsync();
     const [currentHour, currentMinute] = timeStr.split(':').map(Number);
     const currentTotalMinutes = currentHour * 60 + currentMinute;
 
-    const dueItems = items.filter((item) => {
+    const dueItems = scheduledItems.filter((item) => {
       if (!item.enabled) return false;
+      if (!item.id.startsWith('sched_') && !item.id.startsWith('resched_')) return false;
       const statusUpper = (item.status || '').toUpperCase();
-      const isSched = statusUpper === 'SCHEDULED' || statusUpper === 'READY' || statusUpper === 'PENDING';
-      if (!isSched) return false;
+      if (statusUpper !== 'SCHEDULED' && statusUpper !== 'PENDING') return false;
       if (!item.scheduleDate || !item.scheduleTime) return false;
 
       if (item.scheduleDate < dateStr) return true;
@@ -352,19 +353,9 @@ export async function runSchedulerTick(): Promise<{
     }
 
     if (dueItems.length > 0) {
-      await saveEmailDataAsync(items);
+      await saveScheduledEmailsAsync(scheduledItems);
     }
-
-    return {
-      checkedCount: items.length,
-      sentCount: sentItems.length,
-      sentItems,
-      timestampIST: displayString
-    };
-  } finally {
-    isSchedulerRunning = false;
   }
-}
 
 // -------------------------------------------------------------
 // REST API ENDPOINTS (CONNECTED TO CLOUD DATABASE & VERCEL)
@@ -666,12 +657,7 @@ app.get('/api/email/templates', async (_req, res) => {
 
 // Scheduled Emails Queue
 app.get('/api/email/scheduled', async (_req, res) => {
-  const { items } = await loadEmailDataAsync();
-  const scheduled = items.filter((it) => {
-    const s = (it.status || '').toUpperCase();
-    return s === 'SCHEDULED' || s === 'READY' || s === 'PENDING';
-  });
-
+  const scheduled = await loadScheduledEmailsAsync();
   res.json({
     success: true,
     count: scheduled.length,
@@ -714,6 +700,69 @@ app.delete('/api/email/items/:id', async (req, res) => {
   await deleteScheduledEmailAsync(id);
   await recordAutomationActivityAsync('ADMIN_ACTION', `Deleted item: ${id}`);
   res.json({ success: true, deletedId: id });
+});
+
+app.post('/api/email/scheduled/clear-all', async (_req, res) => {
+  try {
+    await clearAllScheduledEmailsAsync();
+    await recordAutomationActivityAsync(
+      'ADMIN_ACTION',
+      'Permanently cleared all scheduled email instances from production database'
+    );
+    res.json({
+      success: true,
+      message: 'All scheduled email instances have been permanently removed.',
+      count: 0
+    });
+  } catch (err: any) {
+    console.error('[Clear All Error]:', err);
+    res.status(500).json({
+      success: false,
+      error: err?.message || 'Failed to clear scheduled emails from database'
+    });
+  }
+});
+
+app.delete('/api/email/scheduled/clear-all', async (_req, res) => {
+  try {
+    await clearAllScheduledEmailsAsync();
+    await recordAutomationActivityAsync(
+      'ADMIN_ACTION',
+      'Permanently cleared all scheduled email instances from production database'
+    );
+    res.json({
+      success: true,
+      message: 'All scheduled email instances have been permanently removed.',
+      count: 0
+    });
+  } catch (err: any) {
+    console.error('[Clear All Error]:', err);
+    res.status(500).json({
+      success: false,
+      error: err?.message || 'Failed to clear scheduled emails from database'
+    });
+  }
+});
+
+app.delete('/api/email/scheduled', async (_req, res) => {
+  try {
+    await clearAllScheduledEmailsAsync();
+    await recordAutomationActivityAsync(
+      'ADMIN_ACTION',
+      'Permanently cleared all scheduled email instances from production database'
+    );
+    res.json({
+      success: true,
+      message: 'All scheduled email instances have been permanently removed.',
+      count: 0
+    });
+  } catch (err: any) {
+    console.error('[Clear All Error]:', err);
+    res.status(500).json({
+      success: false,
+      error: err?.message || 'Failed to clear scheduled emails from database'
+    });
+  }
 });
 
 app.post('/api/email/remove-schedule', async (req, res) => {
@@ -1323,14 +1372,9 @@ app.all(['/api/cron/tick', '/api/email/scheduler/tick'], async (_req, res) => {
 });
 
 // Start scheduler background interval for local daemon & non-serverless
+// Background automatic interval completely disabled to prevent unintended loops
 if (!process.env.VERCEL) {
-  setInterval(async () => {
-    try {
-      await runSchedulerTick();
-    } catch (err) {
-      console.error('[Scheduler Interval Error]:', err);
-    }
-  }, 10000);
+  // setInterval disabled - automated dispatch only on explicit admin action or cron
 
   app.listen(PORT, () => {
     console.log(`[Server] Siri Birthday & Email Automation Server running on port ${PORT}`);

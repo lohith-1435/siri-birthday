@@ -77,7 +77,7 @@ export const DEFAULT_CONFIG: EmailConfig = {
   emailDisplayName: 'SIRI BANGARAM',
   recipientName: 'SIRI BANGARAM',
   recipientEmail: 'lohithmedisetti1432004@gmail.com',
-  autoSendEnabled: true,
+  autoSendEnabled: false,
   smtpHost: 'smtp.gmail.com',
   smtpPort: 465,
   smtpUser: 'lohithmedisetti@gmail.com',
@@ -276,7 +276,7 @@ export function deduplicateSchedules(list: EmailItem[]): EmailItem[] {
   }
   return Array.from(map.values()).filter(it => 
     (it.id.startsWith('sched_') || it.id.startsWith('resched_')) &&
-    ['SCHEDULED', 'READY', 'PENDING'].includes((it.status || '').toUpperCase())
+    ['SCHEDULED', 'PENDING', 'SENT', 'FAILED'].includes((it.status || '').toUpperCase())
   );
 }
 
@@ -363,6 +363,39 @@ export async function saveScheduledEmailsAsync(scheduled: EmailItem[]): Promise<
     }
   }
 }
+export async function clearAllScheduledEmailsAsync(): Promise<boolean> {
+  memoryCache.scheduled = [];
+  memoryCache.items = null;
+
+  // 1. Write empty array to local file
+  try {
+    fs.writeFileSync(SCHEDULED_FILE, JSON.stringify([], null, 2), 'utf8');
+  } catch (err) {
+    console.warn('[Storage] File write skipped (serverless environment):', err);
+  }
+
+  // 2. Write empty array to Supabase cloud database
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { error } = await supabase.from('app_settings').upsert({
+        key: 'scheduled_emails',
+        value: { scheduled: [] },
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'key' });
+
+      if (error) {
+        console.error('[Storage] Supabase clear scheduled emails error:', error);
+        throw error;
+      }
+    } catch (err) {
+      console.error('[Storage] Supabase clear scheduled emails exception:', err);
+      throw err;
+    }
+  }
+
+  return true;
+}
+
 export async function deleteScheduledEmailAsync(id: string): Promise<boolean> {
   const current = await loadScheduledEmailsAsync();
   const filtered = current.filter(it => it.id !== id);
