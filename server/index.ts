@@ -711,9 +711,7 @@ app.post('/api/email/items', async (req, res) => {
 
 app.delete('/api/email/items/:id', async (req, res) => {
   const { id } = req.params;
-  const { items } = await loadEmailDataAsync();
-  const filtered = items.filter((i) => i.id !== id);
-  await saveEmailDataAsync(filtered);
+  await deleteScheduledEmailAsync(id);
   await recordAutomationActivityAsync('ADMIN_ACTION', `Deleted item: ${id}`);
   res.json({ success: true, deletedId: id });
 });
@@ -721,11 +719,7 @@ app.delete('/api/email/items/:id', async (req, res) => {
 app.post('/api/email/remove-schedule', async (req, res) => {
   const { id } = req.body;
   if (!id) return res.status(400).json({ error: 'Item ID is required' });
-
-  const { items } = await loadEmailDataAsync();
-  const filtered = items.filter((it) => it.id !== id);
-  await saveEmailDataAsync(filtered);
-
+  await deleteScheduledEmailAsync(id);
   await recordAutomationActivityAsync('ADMIN_ACTION', `Removed scheduled email: ${id}`);
   res.json({ success: true, message: `Scheduled item ${id} removed successfully` });
 });

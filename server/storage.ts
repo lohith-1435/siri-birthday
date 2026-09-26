@@ -435,11 +435,10 @@ export function loadEmailDataSync(): { items: EmailItem[] } {
 export async function saveEmailDataAsync(items: EmailItem[]): Promise<void> {
   memoryCache.items = items;
 
-  // Split into scheduled vs templates
+  // ONLY real scheduled instances (sched_ or resched_) go into scheduled_emails
   const scheduled = items.filter(it => 
-    it.id.startsWith('sched_') || 
-    it.id.startsWith('resched_') || 
-    ['SCHEDULED', 'PENDING', 'READY'].includes((it.status || '').toUpperCase())
+    (it.id.startsWith('sched_') || it.id.startsWith('resched_')) &&
+    ['SCHEDULED', 'PENDING'].includes((it.status || '').toUpperCase())
   );
   await saveScheduledEmailsAsync(scheduled);
 
