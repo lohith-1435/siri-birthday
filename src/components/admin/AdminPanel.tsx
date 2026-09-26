@@ -31,6 +31,7 @@ import {
   Eye
 } from 'lucide-react';
 import { audioEngine } from '../../utils/audioEngine';
+import { type TithiDateRecord } from '../../services/tithiService';
 import {
   DEFAULT_EMAIL_ITEMS,
   DEFAULT_WEBSITE_URL,
@@ -132,7 +133,8 @@ export interface HealthCheckReport {
 export const AdminPanel: React.FC<AdminPanelProps> = ({
   onBackToFilm,
   onDataUpdated,
-  onBack
+  onBack,
+  onTithiDataUpdated
 }) => {
   // Authentication & Navigation
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -141,7 +143,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // Slicer Navigation Tabs
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'templates' | 'scheduled' | 'upcoming' | 'sent' | 'recipients' | 'automation' | 'branding' | 'snapshots'
+    'overview' | 'templates' | 'scheduled' | 'upcoming' | 'sent' | 'recipients' | 'dates' | 'automation' | 'branding' | 'snapshots'
   >('overview');
 
   // Siri Website Name State
@@ -198,6 +200,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Data Fetch Error & Loading State
   const [dataFetchError, setDataFetchError] = useState<string | null>(null);
   const [isDataFetching, setIsDataFetching] = useState<boolean>(false);
+
+  // DATE MANAGEMENT (Living Timeline & Tithi Engine 2003–2103)
+  const [tithiDates, setTithiDates] = useState<TithiDateRecord[]>([]);
+  const [isDateModalOpen, setIsDateModalOpen] = useState<boolean>(false);
+  const [editingDateRecord, setEditingDateRecord] = useState<TithiDateRecord | null>(null);
+  const [formYear, setFormYear] = useState<number>(2026);
+  const [formDate, setFormDate] = useState<string>('14 October');
+  const [formTithi, setFormTithi] = useState<string>('Ashwayuja Shukla Tritiya');
+  const [formStatus, setFormStatus] = useState<'published' | 'draft' | 'unpublished'>('published');
+  const [formNotes, setFormNotes] = useState<string>('');
+  const [dateSearchQuery, setDateSearchQuery] = useState<string>('');
+  const [dateStatusFilter, setDateStatusFilter] = useState<'all' | 'published' | 'draft' | 'unpublished'>('all');
+  const [dateActionStatus, setDateActionStatus] = useState<string>('');
 
   // Today's Dispatch, Scheduled Items, Templates, Sent Logs
   const [todaysDispatch, setTodaysDispatch] = useState<TodaysDispatchItem[]>([]);
@@ -394,6 +409,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         lastErrorMsg = e?.message || 'Snapshots load error';
       }
 
+      // 10. Tithi Dates (2003–2103 Living Timeline Database)
+      try {
+        const datesRes = await fetch(`${BACKEND_URL}/api/tithi-dates`).then(r => r.json()).catch(() => null);
+        if (datesRes?.success && Array.isArray(datesRes.dates)) {
+          setTithiDates(datesRes.dates);
+        }
+      } catch (e: any) {
+        errorOccurred = true;
+        lastErrorMsg = e?.message || 'Tithi dates fetch error';
+      }
+
       // 9. Missed Items
       try {
         const missedRes = await fetch(`${BACKEND_URL}/api/email/pending-missed`).then(r => r.json()).catch(() => null);
@@ -544,6 +570,120 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       setProfileActionStatus(`✗ Send error: ${err.message}`);
     }
     setTimeout(() => setProfileActionStatus(''), 5000);
+  };
+
+  // DATE MANAGEMENT HANDLERS
+  const handleOpenAddDate = () => {
+    setEditingDateRecord(null);
+    const sorted = [...tithiDates].sort((a, b) => a.year - b.year);
+    const maxYear = sorted.length > 0 ? sorted[sorted.length - 1].year : 2026;
+    setFormYear(maxYear + 1);
+    setFormDate('');
+    setFormTithi('Ashwayuja Shukla Tritiya');
+    setFormStatus('published');
+    setFormNotes('');
+    setIsDateModalOpen(true);
+  };
+
+  const handleOpenEditDate = (rec: TithiDateRecord) => {
+    setEditingDateRecord(rec);
+    setFormYear(rec.year);
+    setFormDate(rec.date);
+    setFormTithi(rec.tithi_name || 'Ashwayuja Shukla Tritiya');
+    setFormStatus(rec.status);
+    setFormNotes(rec.notes || '');
+    setIsDateModalOpen(true);
+  };
+
+  const handleSaveDate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formDate.trim()) {
+      alert('Tithi date is required (e.g. "14 October")');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/tithi-dates`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingDateRecord?.id,
+          year: formYear,
+          date: formDate.trim(),
+          tithi_name: formTithi.trim(),
+          status: formStatus,
+          notes: formNotes.trim()
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsDateModalOpen(false);
+        setDateActionStatus(`✦ Year ${formYear} date saved successfully!`);
+        setTimeout(() => setDateActionStatus(''), 4000);
+        audioEngine.playSacredChime(784);
+        fetchData();
+        if (onDataUpdated) onDataUpdated();
+        if (onTithiDataUpdated) onTithiDataUpdated();
+      } else {
+        alert(data.error || 'Failed to save Tithi date');
+      }
+    } catch (err: any) {
+      alert('Error saving date: ' + err.message);
+    }
+  };
+
+  const handleToggleDateStatus = async (rec: TithiDateRecord, nextStatus: 'published' | 'draft' | 'unpublished') => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/tithi-dates/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: rec.id, year: rec.year, status: nextStatus })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setDateActionStatus(`✦ Year ${rec.year} status set to ${nextStatus.toUpperCase()}`);
+        setTimeout(() => setDateActionStatus(''), 3000);
+        fetchData();
+        if (onDataUpdated) onDataUpdated();
+      }
+    } catch (err: any) {
+      console.error('Error toggling date status:', err);
+    }
+  };
+
+  const handleDeleteDate = async (rec: TithiDateRecord) => {
+    if (!window.confirm(`Are you sure you want to remove year ${rec.year} (${rec.date})?`)) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/tithi-dates/${rec.id || rec.year}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (data.success) {
+        setDateActionStatus(`Year ${rec.year} date removed`);
+        setTimeout(() => setDateActionStatus(''), 3000);
+        fetchData();
+        if (onDataUpdated) onDataUpdated();
+      }
+    } catch (err: any) {
+      alert('Error deleting date: ' + err.message);
+    }
+  };
+
+  const handleResetDatesSeed = async () => {
+    if (!window.confirm('Reset Date Management to the initial 2003–2030 verified Hindu Lunar seed dates?')) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/tithi-dates/reset`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        setDateActionStatus('✦ Reset to 2003–2030 verified seed successfully');
+        setTimeout(() => setDateActionStatus(''), 4000);
+        audioEngine.playSacredChime(600);
+        fetchData();
+        if (onDataUpdated) onDataUpdated();
+      }
+    } catch (err: any) {
+      alert('Reset failed: ' + err.message);
+    }
   };
 
   // 4. Toggle Automation Master Switch
@@ -895,6 +1035,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     { id: 'upcoming', label: 'UPCOMING EMAILS', icon: Clock },
     { id: 'sent', label: 'SENT EMAILS', icon: CheckCircle2 },
     { id: 'recipients', label: 'RECIPIENT PROFILES', icon: Users },
+    { id: 'dates', label: 'DATE MANAGEMENT', icon: Calendar },
     { id: 'automation', label: 'AUTOMATION', icon: Power },
     { id: 'branding', label: 'EMAIL IDENTITY', icon: AtSign },
     { id: 'snapshots', label: 'REFERENCE MAILS', icon: Bookmark }
@@ -1702,6 +1843,188 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         {/* ========================================================================= */}
         {/* TAB 7: [ AUTOMATION ]                                                     */}
         {/* ========================================================================= */}
+        {/* ========================================================================= */}
+        {/* TAB 7: [ DATE MANAGEMENT ] (2003–2103 Living Timeline & Lunar Tithi)       */}
+        {/* ========================================================================= */}
+        {activeTab === 'dates' && (
+          <div className="space-y-6 animate-fadeIn">
+            <div className="bg-[#0e0814]/90 border border-amber-500/30 rounded-2xl p-6 shadow-xl space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-amber-500/20">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-amber-400" />
+                    <h3 className="text-lg font-serif font-bold text-amber-100">
+                      DATE MANAGEMENT & LIVING TIMELINE DATABASE
+                    </h3>
+                  </div>
+                  <p className="text-xs text-amber-400/60 mt-0.5">
+                    101-Year Hindu Lunar Tithi Calendar (2003–2103) · Verified Ashwayuja Shukla Tritiya Records
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <button
+                    onClick={handleOpenAddDate}
+                    className="px-3.5 py-2 bg-gradient-to-r from-amber-600 to-amber-500 text-black font-bold text-xs rounded-xl hover:brightness-110 shadow-lg flex items-center gap-1.5"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" /> + Add New Year Date
+                  </button>
+                  <button
+                    onClick={handleResetDatesSeed}
+                    className="px-3 py-2 bg-white/5 border border-amber-500/20 text-amber-300 text-xs rounded-xl hover:bg-amber-500/10 transition-all flex items-center gap-1.5"
+                    title="Reset to 2003–2030 verified seed dataset"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" /> Reset Seed
+                  </button>
+                </div>
+              </div>
+
+              {dateActionStatus && (
+                <div className="p-3 bg-emerald-950/40 border border-emerald-500/40 rounded-xl text-xs text-emerald-300 font-semibold animate-fadeIn">
+                  {dateActionStatus}
+                </div>
+              )}
+
+              {/* Quick Metrics Bar */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3.5 rounded-xl bg-black/40 border border-white/5">
+                  <span className="text-[10px] uppercase tracking-wider text-amber-400/60 block">Present Year (2026)</span>
+                  <span className="text-sm font-bold font-mono text-amber-200 mt-1 block">14 October ★</span>
+                  <span className="text-[10px] text-emerald-400">Verified & Published</span>
+                </div>
+                <div className="p-3.5 rounded-xl bg-black/40 border border-white/5">
+                  <span className="text-[10px] uppercase tracking-wider text-amber-400/60 block">Total Living Dates</span>
+                  <span className="text-lg font-bold font-mono text-amber-300 mt-0.5 block">{tithiDates.length}</span>
+                  <span className="text-[10px] text-amber-400/60">2003–2103 Timeline</span>
+                </div>
+                <div className="p-3.5 rounded-xl bg-black/40 border border-white/5">
+                  <span className="text-[10px] uppercase tracking-wider text-amber-400/60 block">Published Records</span>
+                  <span className="text-lg font-bold font-mono text-emerald-300 mt-0.5 block">
+                    {tithiDates.filter(d => d.status === 'published').length}
+                  </span>
+                  <span className="text-[10px] text-emerald-400/70">Live on Public Film</span>
+                </div>
+                <div className="p-3.5 rounded-xl bg-black/40 border border-white/5">
+                  <span className="text-[10px] uppercase tracking-wider text-amber-400/60 block">Draft / Unpublished</span>
+                  <span className="text-lg font-bold font-mono text-amber-400 mt-0.5 block">
+                    {tithiDates.filter(d => d.status !== 'published').length}
+                  </span>
+                  <span className="text-[10px] text-amber-400/60">Awaiting Reveal</span>
+                </div>
+              </div>
+
+              {/* Search & Filter Toolbar */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                <div className="w-full sm:w-72">
+                  <input
+                    type="text"
+                    placeholder="Search year or date (e.g. 2026, October)..."
+                    value={dateSearchQuery}
+                    onChange={(e) => setDateSearchQuery(e.target.value)}
+                    className="w-full bg-[#1b1022] border border-amber-500/30 rounded-xl px-3.5 py-2 text-xs text-amber-200 placeholder-amber-400/40 focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+
+                <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto">
+                  {(['all', 'published', 'draft', 'unpublished'] as const).map((st) => (
+                    <button
+                      key={st}
+                      onClick={() => setDateStatusFilter(st)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all whitespace-nowrap ${
+                        dateStatusFilter === st
+                          ? 'bg-amber-500/25 border border-amber-400 text-amber-200 font-bold'
+                          : 'bg-white/5 border border-white/5 text-amber-400/60 hover:text-amber-200'
+                      }`}
+                    >
+                      {st}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tithi Dates Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-amber-500/20 text-amber-400/70 font-semibold uppercase text-[10px] tracking-wider">
+                      <th className="py-3 px-3">Year</th>
+                      <th className="py-3 px-3">Solar Birthday</th>
+                      <th className="py-3 px-3">Lunar Tithi Date</th>
+                      <th className="py-3 px-3">Tithi Name</th>
+                      <th className="py-3 px-3">Status</th>
+                      <th className="py-3 px-3">Notes</th>
+                      <th className="py-3 px-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {tithiDates
+                      .filter((d) => {
+                        const matchesSearch = !dateSearchQuery.trim() || 
+                          String(d.year).includes(dateSearchQuery) || 
+                          (d.date || '').toLowerCase().includes(dateSearchQuery.toLowerCase()) ||
+                          (d.notes || '').toLowerCase().includes(dateSearchQuery.toLowerCase());
+                        const matchesStatus = dateStatusFilter === 'all' || d.status === dateStatusFilter;
+                        return matchesSearch && matchesStatus;
+                      })
+                      .map((rec) => (
+                        <tr key={rec.id || rec.year} className="hover:bg-white/[0.02] transition-colors">
+                          <td className="py-3 px-3 font-mono font-bold text-amber-300 text-sm">
+                            {rec.year}
+                          </td>
+                          <td className="py-3 px-3 font-mono text-amber-200/80">
+                            28 September
+                          </td>
+                          <td className="py-3 px-3 font-serif font-bold text-amber-100 text-sm">
+                            {rec.date}
+                          </td>
+                          <td className="py-3 px-3 italic text-amber-400/70 text-xs">
+                            {rec.tithi_name || 'Ashwayuja Shukla Tritiya'}
+                          </td>
+                          <td className="py-3 px-3">
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                              rec.status === 'published'
+                                ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300'
+                                : rec.status === 'draft'
+                                ? 'bg-amber-950/60 border-amber-500/50 text-amber-300'
+                                : 'bg-white/5 border-white/20 text-gray-400'
+                            }`}>
+                              {rec.status.toUpperCase()}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-amber-400/60 text-[11px] truncate max-w-xs">
+                            {rec.notes || '--'}
+                          </td>
+                          <td className="py-3 px-3 text-right space-x-1.5 whitespace-nowrap">
+                            <button
+                              onClick={() => handleOpenEditDate(rec)}
+                              className="px-2.5 py-1 bg-white/5 border border-amber-500/20 rounded text-amber-300 text-[11px] hover:bg-amber-500/10"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleToggleDateStatus(rec, rec.status === 'published' ? 'unpublished' : 'published')}
+                              className="px-2 py-1 bg-amber-500/10 border border-amber-500/30 rounded text-amber-200 text-[11px] hover:bg-amber-500/20"
+                            >
+                              {rec.status === 'published' ? 'Unpublish' : 'Publish'}
+                            </button>
+                            {rec.year > 2030 && (
+                              <button
+                                onClick={() => handleDeleteDate(rec)}
+                                className="px-2 py-1 bg-red-950/40 border border-red-500/30 rounded text-red-300 text-[11px] hover:bg-red-900/40"
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'automation' && (
           <div className="space-y-6 animate-fadeIn">
             <div className="bg-[#0e0814]/90 border border-amber-500/30 rounded-2xl p-6 shadow-xl space-y-6">
@@ -2429,6 +2752,118 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 />
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+            {/* ========================================================================= */}
+      {/* MODAL: DATE MANAGEMENT ADD / EDIT DIALOG                                  */}
+      {/* ========================================================================= */}
+      {isDateModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#120a17] border border-amber-500/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-fadeIn">
+            <div className="flex items-center justify-between pb-3 border-b border-amber-500/20">
+              <h3 className="font-serif font-bold text-amber-100 text-lg flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-amber-400" />
+                {editingDateRecord ? `Edit Year ${formYear} Date` : 'Add New Year Date'}
+              </h3>
+              <button
+                onClick={() => setIsDateModalOpen(false)}
+                className="text-amber-400/60 hover:text-amber-200 text-xl font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveDate} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-amber-400/80 font-semibold mb-1">
+                    Year
+                  </label>
+                  <input
+                    type="number"
+                    min={2003}
+                    max={2103}
+                    value={formYear}
+                    onChange={(e) => setFormYear(Number(e.target.value))}
+                    className="w-full bg-[#1b1022] border border-amber-500/30 rounded-xl px-3.5 py-2 text-sm font-mono text-amber-200 focus:outline-none focus:border-amber-400"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-amber-400/80 font-semibold mb-1">
+                    Status
+                  </label>
+                  <select
+                    value={formStatus}
+                    onChange={(e) => setFormStatus(e.target.value as any)}
+                    className="w-full bg-[#1b1022] border border-amber-500/30 rounded-xl px-3.5 py-2 text-sm text-amber-200 focus:outline-none focus:border-amber-400"
+                  >
+                    <option value="published">Published (Live)</option>
+                    <option value="draft">Draft (Admin Only)</option>
+                    <option value="unpublished">Unpublished (Yet to be revealed)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-amber-400/80 font-semibold mb-1">
+                  Lunar Tithi Date (e.g. "14 October" or "28 September")
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 14 October"
+                  value={formDate}
+                  onChange={(e) => setFormDate(e.target.value)}
+                  className="w-full bg-[#1b1022] border border-amber-500/30 rounded-xl px-3.5 py-2 text-sm text-amber-200 font-serif focus:outline-none focus:border-amber-400"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-amber-400/80 font-semibold mb-1">
+                  Tithi Name (Sanskrit / Vedic)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ashwayuja Shukla Tritiya"
+                  value={formTithi}
+                  onChange={(e) => setFormTithi(e.target.value)}
+                  className="w-full bg-[#1b1022] border border-amber-500/30 rounded-xl px-3.5 py-2 text-sm text-amber-200 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-amber-400/80 font-semibold mb-1">
+                  Milestone Notes / Description (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Present Verified Year, Golden Horizon Milestone"
+                  value={formNotes}
+                  onChange={(e) => setFormNotes(e.target.value)}
+                  className="w-full bg-[#1b1022] border border-amber-500/30 rounded-xl px-3.5 py-2 text-sm text-amber-200 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-amber-500/20">
+                <button
+                  type="button"
+                  onClick={() => setIsDateModalOpen(false)}
+                  className="px-4 py-2 bg-white/5 border border-amber-500/20 text-amber-300 text-xs rounded-xl hover:bg-white/10"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-gradient-to-r from-amber-600 to-amber-500 text-black font-bold text-xs rounded-xl hover:brightness-110 shadow-lg"
+                >
+                  Save Date Record
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

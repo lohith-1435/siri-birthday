@@ -30,6 +30,11 @@ import {
   type EmailConfig,
   type AutomationActivity,
   type SentLogRecord,
+  loadScheduledEmailsAsync,
+  saveScheduledEmailsAsync,
+  deleteScheduledEmailAsync,
+  upsertScheduledEmailAsync,
+  loadEmailTemplatesAsync,
   loadEmailConfigAsync,
   loadEmailConfigSync,
   saveEmailConfigAsync,
@@ -42,6 +47,10 @@ import {
   loadSnapshotsAsync,
   loadSnapshotsSync,
   saveSnapshotsAsync,
+  loadTithiDatesAsync,
+  saveTithiDatesAsync,
+  getInitialTithiDates,
+  type TithiDateRecord,
   loadAutomationActivityAsync,
   loadAutomationActivitySync,
   recordAutomationActivityAsync
@@ -363,25 +372,21 @@ export async function runSchedulerTick(): Promise<{
 
 app.get('/api/automation/health', async (_req, res) => {
   const config = await loadEmailConfigAsync();
-  const { items } = await loadEmailDataAsync();
+  const scheduled = await loadScheduledEmailsAsync();
   const logs = await loadEmailLogsAsync();
   const { dateStr, timeStr, displayString } = getIstTime();
 
-  const [currentHour, currentMinute] = timeStr.split(':').map(Number);
-  const currentTotalMinutes = currentHour * 60 + currentMinute;
-
-  const scheduled = items.filter((i) => {
-    const s = (i.status || '').toUpperCase();
+  const active = scheduled.filter((i) => {
+    const s = (i.status || 'SCHEDULED').toUpperCase();
     return s === 'SCHEDULED' || s === 'READY' || s === 'PENDING';
   });
 
-  const nextUpcoming = scheduled.slice(0, 5);
+  const nextUpcoming = active.slice(0, 5);
   const sentCount = logs.filter((l) => l.status === 'SENT').length;
   const failedCount = logs.filter((l) => l.status === 'FAILED').length;
 
-  const todaysScheduled = scheduled.filter((i) => i.scheduleDate === dateStr);
-  const todaysList = todaysScheduled.length > 0 ? todaysScheduled : scheduled.slice(0, 5);
-  const todaysDispatch = todaysList.map((i) => {
+  const todaysScheduled = active.filter((i) => i.scheduleDate === dateStr);
+  const todaysDispatch = todaysScheduled.map((i) => {
     const dest = resolveDestinationEmail(i.destinationProfile, config);
     return {
       id: i.id,
@@ -403,7 +408,7 @@ app.get('/api/automation/health', async (_req, res) => {
     currentTimeIST: displayString,
     currentDateIST: dateStr,
     currentTimeOnlyIST: timeStr,
-    scheduledTotal: scheduled.length,
+    scheduledTotal: active.length,
     sentTotal: sentCount,
     failedTotal: failedCount,
     cloudDbConnected: isSupabaseConfigured,
@@ -641,10 +646,21 @@ Timezone: Asia/Kolkata (IST)`,
 // Master Email Templates Library (Reusable Master Templates)
 app.get('/api/email/templates', async (_req, res) => {
   const { items } = await loadEmailDataAsync();
-  const masterTemplates = items.filter((it) => !it.id.startsWith('sched_') && !it.id.startsWith('resched_'));
+  const masterMap = new Map<string, EmailItem>();
+  DEFAULT_EMAIL_ITEMS.forEach((d) => masterMap.set(d.id, { ...d }));
+
+  items.forEach((it) => {
+    if (!it.id.startsWith('sched_') && !it.id.startsWith('resched_')) {
+      const existing = masterMap.get(it.id);
+      masterMap.set(it.id, existing ? { ...existing, ...it } : it);
+    }
+  });
+
+  const fullTemplates = Array.from(masterMap.values());
   res.json({
     success: true,
-    templates: masterTemplates.length > 0 ? masterTemplates : DEFAULT_EMAIL_ITEMS
+    count: fullTemplates.length,
+    templates: fullTemplates
   });
 });
 
@@ -840,32 +856,65 @@ app.post('/api/email/reschedule', async (req, res) => {
     originalEmailId,
     newDate,
     newTime,
-    recipient,
     destinationProfile,
     customSubject,
-    buttonText,
+    recipient,
     linkAlias,
+    buttonText,
     emailDisplayName
   } = req.body;
 
   if (!originalEmailId || !newDate || !newTime) {
-    return res.status(400).json({ error: 'originalEmailId, newDate, and newTime are required' });
+    return res.status(400).json({ error: 'originalEmailId, newDate and newTime are required' });
   }
 
-  const { items } = await loadEmailDataAsync();
+  const scheduled = await loadScheduledEmailsAsync();
+  const templates = await loadEmailTemplatesAsync();
   const config = await loadEmailConfigAsync();
 
-  const baseItem = DEFAULT_EMAIL_ITEMS.find((d) => d.id === originalEmailId)
-    || items.find((i) => i.id === originalEmailId)
-    || DEFAULT_EMAIL_ITEMS[0];
-
-  const prof = destinationProfile || baseItem.destinationProfile || 'S1';
+  const existingIndex = scheduled.findIndex((it) => it.id === originalEmailId);
+  const prof = destinationProfile || (existingIndex >= 0 ? scheduled[existingIndex].destinationProfile : 'S1');
   const dest = resolveDestinationEmail(prof, config);
   const targetEmail = recipient || dest.email;
 
   const effectiveDisplayName = (emailDisplayName !== undefined && emailDisplayName.trim() !== '')
     ? emailDisplayName.trim()
     : (config.emailDisplayName || 'SIRI BANGARAM');
+
+  if (existingIndex >= 0) {
+    // In-place update without creating duplicate
+    const updated: EmailItem = {
+      ...scheduled[existingIndex],
+      scheduleDate: newDate,
+      scheduleTime: newTime,
+      destinationProfile: dest.profile,
+      recipient: targetEmail,
+      subject: customSubject || scheduled[existingIndex].subject,
+      linkAlias: linkAlias || scheduled[existingIndex].linkAlias,
+      buttonText: buttonText || scheduled[existingIndex].buttonText,
+      emailDisplayName: effectiveDisplayName,
+      status: 'SCHEDULED',
+      updatedAt: new Date().toISOString()
+    };
+    await upsertScheduledEmailAsync(updated);
+
+    await recordAutomationActivityAsync(
+      'ADMIN_ACTION',
+      `Rescheduled "${updated.name}" to ${newDate} ${newTime} IST for ${dest.label} (${targetEmail})`
+    );
+
+    return res.json({
+      success: true,
+      message: `Rescheduled "${updated.name}" for ${newDate} at ${newTime} IST`,
+      newItem: updated,
+      destination: dest
+    });
+  }
+
+  // Create new scheduled instance from template
+  const baseItem = DEFAULT_EMAIL_ITEMS.find((d) => d.id === originalEmailId)
+    || templates.find((i) => i.id === originalEmailId)
+    || DEFAULT_EMAIL_ITEMS[0];
 
   const instanceId = `resched_${originalEmailId}_${Date.now()}`;
 
@@ -880,16 +929,16 @@ app.post('/api/email/reschedule', async (req, res) => {
     scheduleTime: newTime,
     status: 'SCHEDULED',
     enabled: true,
-    buttonText: buttonText || baseItem.buttonText || 'ENTER YOUR STORY →',
-    linkAlias: linkAlias || baseItem.linkAlias || 'ENTER YOUR STORY →',
+    buttonText: buttonText || baseItem.buttonText || 'ENTER YOUR STORY ✦',
+    linkAlias: linkAlias || baseItem.linkAlias || 'ENTER YOUR STORY ✦',
     websiteUrl: baseItem.websiteUrl || config.websiteUrl || DEFAULT_WEBSITE_URL,
     customDisplayName: effectiveDisplayName,
     emailDisplayName: effectiveDisplayName,
-    useGlobalEmailDisplayName: true
+    useGlobalEmailDisplayName: true,
+    createdAt: new Date().toISOString()
   };
 
-  items.unshift(newScheduledItem);
-  await saveEmailDataAsync(items);
+  await upsertScheduledEmailAsync(newScheduledItem);
 
   await recordAutomationActivityAsync(
     'ADMIN_ACTION',
@@ -916,12 +965,13 @@ app.get('/api/email/sent', async (_req, res) => {
 
 app.post('/api/email/items/:id/send-now', async (req, res) => {
   const { id } = req.params;
-  const { items } = await loadEmailDataAsync();
+  const scheduled = await loadScheduledEmailsAsync();
+  const templates = await loadEmailTemplatesAsync();
   const config = await loadEmailConfigAsync();
-  const item = items.find((i) => i.id === id) || DEFAULT_EMAIL_ITEMS.find((d) => d.id === id);
+  const item = scheduled.find((i) => i.id === id) || templates.find((it) => it.id === id) || DEFAULT_EMAIL_ITEMS.find((d) => d.id === id);
 
   if (!item) {
-    return res.status(404).json({ error: 'Email item not found' });
+    return res.status(404).json({ error: 'Email item not found in database' });
   }
 
   const dest = resolveDestinationEmail(item.destinationProfile, config);
@@ -932,11 +982,11 @@ app.post('/api/email/items/:id/send-now', async (req, res) => {
   });
 
   if (result.success) {
-    const itemIndex = items.findIndex((i) => i.id === id);
-    if (itemIndex >= 0) {
-      items[itemIndex].status = 'SENT';
-      items[itemIndex].sentAt = new Date().toISOString();
-      await saveEmailDataAsync(items);
+    const schedIdx = scheduled.findIndex((i) => i.id === id);
+    if (schedIdx >= 0) {
+      scheduled[schedIdx].status = 'SENT';
+      scheduled[schedIdx].sentAt = new Date().toISOString();
+      await saveScheduledEmailsAsync(scheduled);
     }
     const logs = await loadEmailLogsAsync();
     res.json({
@@ -1131,6 +1181,87 @@ app.all('/api/email/preview/:id', async (req, res) => {
 
   res.setHeader('Content-Type', 'text/html');
   res.send(renderedHtml);
+});
+
+// -------------------------------------------------------------
+// TITHI DATES & LIVING TIMELINE REST API (2003–2103)
+// -------------------------------------------------------------
+
+app.get('/api/tithi-dates', async (_req, res) => {
+  const dates = await loadTithiDatesAsync();
+  res.json({ success: true, count: dates.length, dates });
+});
+
+app.post('/api/tithi-dates', async (req, res) => {
+  const { id, year, date, tithi_name, status, notes } = req.body;
+  if (!year || !date) {
+    return res.status(400).json({ error: 'Year and date are required' });
+  }
+
+  const yr = Number(year);
+  const dates = await loadTithiDatesAsync();
+  const existingIdx = dates.findIndex((d) => d.year === yr || (id && d.id === id));
+
+  const now = new Date().toISOString();
+  const record: TithiDateRecord = {
+    id: id || `date_${yr}_${Date.now()}`,
+    year: yr,
+    date: date.trim(),
+    tithi_name: tithi_name ? tithi_name.trim() : 'Ashwayuja Shukla Tritiya',
+    status: (status === 'draft' || status === 'unpublished') ? status : 'published',
+    notes: notes ? notes.trim() : undefined,
+    updated_at: now,
+    published_at: (status !== 'draft' && status !== 'unpublished') ? now : null
+  };
+
+  if (existingIdx >= 0) {
+    dates[existingIdx] = { ...dates[existingIdx], ...record };
+  } else {
+    dates.push(record);
+  }
+
+  dates.sort((a, b) => a.year - b.year);
+  await saveTithiDatesAsync(dates);
+  await recordAutomationActivityAsync('ADMIN_ACTION', `Tithi Date for year ${yr} saved (${record.date}, ${record.status})`);
+
+  res.json({ success: true, record, dates });
+});
+
+app.post('/api/tithi-dates/status', async (req, res) => {
+  const { id, year, status } = req.body;
+  const yr = Number(year);
+  const dates = await loadTithiDatesAsync();
+  const target = dates.find((d) => d.id === id || d.year === yr);
+
+  if (!target) {
+    return res.status(404).json({ error: 'Tithi record not found' });
+  }
+
+  const now = new Date().toISOString();
+  target.status = status;
+  target.updated_at = now;
+  target.published_at = status === 'published' ? now : null;
+
+  await saveTithiDatesAsync(dates);
+  await recordAutomationActivityAsync('ADMIN_ACTION', `Tithi Date status for year ${target.year} set to ${status}`);
+
+  res.json({ success: true, record: target, dates });
+});
+
+app.delete('/api/tithi-dates/:id', async (req, res) => {
+  const { id } = req.params;
+  const dates = await loadTithiDatesAsync();
+  const filtered = dates.filter((d) => d.id !== id && String(d.year) !== id);
+  await saveTithiDatesAsync(filtered);
+  await recordAutomationActivityAsync('ADMIN_ACTION', `Deleted Tithi date record: ${id}`);
+  res.json({ success: true, deletedId: id, dates: filtered });
+});
+
+app.post('/api/tithi-dates/reset', async (_req, res) => {
+  const resetDates = getInitialTithiDates();
+  await saveTithiDatesAsync(resetDates);
+  await recordAutomationActivityAsync('ADMIN_ACTION', 'Reset Tithi dates to 2003–2030 verified seed dataset');
+  res.json({ success: true, message: 'Reset to verified seed successfully', dates: resetDates });
 });
 
 app.post('/api/admin/verify-password', (req, res) => {

@@ -27,6 +27,7 @@ try {
 export const CONFIG_FILE = path.join(DATA_DIR, 'email_config.json');
 export const LOGS_FILE = path.join(DATA_DIR, 'email_logs.json');
 export const TEMPLATES_FILE = path.join(DATA_DIR, 'email_templates.json');
+export const SCHEDULED_FILE = path.join(DATA_DIR, 'scheduled_emails.json');
 export const SNAPSHOTS_FILE = path.join(DATA_DIR, 'reference_snapshots.json');
 export const RECIPIENTS_FILE = path.join(DATA_DIR, 'recipients.json');
 export const ACTIVITY_FILE = path.join(DATA_DIR, 'automation_activity.json');
@@ -145,6 +146,7 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured
 const memoryCache = {
   config: null as EmailConfig | null,
   items: null as EmailItem[] | null,
+  scheduled: null as EmailItem[] | null,
   logs: null as SentLogRecord[] | null,
   snapshots: null as Record<string, ReferenceSnapshot> | null,
   activities: null as AutomationActivity[] | null,
@@ -264,78 +266,194 @@ export async function saveEmailConfigAsync(config: EmailConfig): Promise<void> {
 // 2. EMAIL TEMPLATES & SCHEDULED ITEMS PERSISTENCE
 // -------------------------------------------------------------
 
-export async function loadEmailDataAsync(): Promise<{ items: EmailItem[] }> {
+export async function loadScheduledEmailsAsync(): Promise<EmailItem[]> {
   // 1. Try Supabase cloud database
   if (isSupabaseConfigured && supabase) {
     try {
       const { data, error } = await supabase
         .from('app_settings')
         .select('value')
-        .eq('key', 'email_templates')
+        .eq('key', 'scheduled_emails')
         .maybeSingle();
 
-      if (!error && data?.value && Array.isArray((data.value as any).items)) {
-        const items = (data.value as any).items as EmailItem[];
-        if (items.length > 0) {
-          memoryCache.items = items;
-          return { items };
-        }
+      if (!error && data?.value && Array.isArray((data.value as any).scheduled)) {
+        const scheduled = (data.value as any).scheduled as EmailItem[];
+        memoryCache.scheduled = scheduled;
+        return scheduled;
       }
     } catch (err) {
-      console.warn('[Storage] Supabase load templates failed, using local store:', err);
+      console.warn('[Storage] Supabase load scheduled emails failed, using local store:', err);
     }
   }
 
-  // 2. Fallback to memory cache
-  if (memoryCache.items && memoryCache.items.length > 0) {
-    return { items: memoryCache.items };
+  // 2. Return memory cache if explicitly initialized
+  if (memoryCache.scheduled !== null && Array.isArray(memoryCache.scheduled)) {
+    return memoryCache.scheduled;
   }
 
-  // 3. Fallback to local file
+  // 3. Try local file
   try {
-    if (fs.existsSync(TEMPLATES_FILE)) {
-      const items: EmailItem[] = JSON.parse(fs.readFileSync(TEMPLATES_FILE, 'utf8'));
-      if (Array.isArray(items) && items.length > 0) {
-        memoryCache.items = items;
-        return { items };
+    if (fs.existsSync(SCHEDULED_FILE)) {
+      const scheduled: EmailItem[] = JSON.parse(fs.readFileSync(SCHEDULED_FILE, 'utf8'));
+      if (Array.isArray(scheduled)) {
+        memoryCache.scheduled = scheduled;
+        return scheduled;
       }
     }
   } catch (err) {
-    console.error('[Storage Error] Failed to read email_templates.json:', err);
+    console.error('[Storage Error] Failed to read scheduled_emails.json:', err);
   }
 
-  const defaultItems = [...DEFAULT_EMAIL_ITEMS];
-  memoryCache.items = defaultItems;
-  return { items: defaultItems };
-}
-
-export function loadEmailDataSync(): { items: EmailItem[] } {
-  if (memoryCache.items && memoryCache.items.length > 0) {
-    return { items: memoryCache.items };
-  }
+  // 4. Initial Migration from existing email_templates.json if SCHEDULED_FILE does not exist
   try {
     if (fs.existsSync(TEMPLATES_FILE)) {
-      const items: EmailItem[] = JSON.parse(fs.readFileSync(TEMPLATES_FILE, 'utf8'));
-      if (Array.isArray(items) && items.length > 0) {
-        memoryCache.items = items;
-        return { items };
+      const existing: EmailItem[] = JSON.parse(fs.readFileSync(TEMPLATES_FILE, 'utf8'));
+      if (Array.isArray(existing)) {
+        // Pick only items that are actual scheduled instances
+        const activeSchedules = existing.filter(it => 
+          (it.id.startsWith('sched_') || it.id.startsWith('resched_')) &&
+          ['SCHEDULED', 'READY', 'PENDING'].includes((it.status || '').toUpperCase())
+        );
+        memoryCache.scheduled = activeSchedules;
+        try {
+          fs.writeFileSync(SCHEDULED_FILE, JSON.stringify(activeSchedules, null, 2), 'utf8');
+        } catch {}
+        return activeSchedules;
       }
     }
   } catch {}
-  return { items: [...DEFAULT_EMAIL_ITEMS] };
+
+  // 5. Default: Empty array. DO NOT recreate mock or default scheduled items!
+  memoryCache.scheduled = [];
+  return [];
+}
+
+export function loadScheduledEmailsSync(): EmailItem[] {
+  if (memoryCache.scheduled !== null && Array.isArray(memoryCache.scheduled)) {
+    return memoryCache.scheduled;
+  }
+  try {
+    if (fs.existsSync(SCHEDULED_FILE)) {
+      const scheduled: EmailItem[] = JSON.parse(fs.readFileSync(SCHEDULED_FILE, 'utf8'));
+      if (Array.isArray(scheduled)) {
+        memoryCache.scheduled = scheduled;
+        return scheduled;
+      }
+    }
+  } catch {}
+  return [];
+}
+
+export async function saveScheduledEmailsAsync(scheduled: EmailItem[]): Promise<void> {
+  memoryCache.scheduled = scheduled;
+
+  // 1. Write to local file
+  try {
+    fs.writeFileSync(SCHEDULED_FILE, JSON.stringify(scheduled, null, 2), 'utf8');
+  } catch (err) {
+    console.warn('[Storage] File write skipped (serverless environment):', err);
+  }
+
+  // 2. Write to Supabase cloud database
+  if (isSupabaseConfigured && supabase) {
+    try {
+      await supabase.from('app_settings').upsert({
+        key: 'scheduled_emails',
+        value: { scheduled },
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'key' });
+    } catch (err) {
+      console.error('[Storage] Supabase save scheduled emails error:', err);
+    }
+  }
+}
+
+export async function deleteScheduledEmailAsync(id: string): Promise<boolean> {
+  const current = await loadScheduledEmailsAsync();
+  const filtered = current.filter(it => it.id !== id);
+  await saveScheduledEmailsAsync(filtered);
+
+  // Also clean up from legacy email_templates if present
+  try {
+    if (fs.existsSync(TEMPLATES_FILE)) {
+      const items: EmailItem[] = JSON.parse(fs.readFileSync(TEMPLATES_FILE, 'utf8'));
+      if (Array.isArray(items)) {
+        const remaining = items.filter(it => it.id !== id);
+        fs.writeFileSync(TEMPLATES_FILE, JSON.stringify(remaining, null, 2), 'utf8');
+      }
+    }
+  } catch {}
+
+  return true;
+}
+
+export async function upsertScheduledEmailAsync(item: EmailItem): Promise<EmailItem> {
+  const current = await loadScheduledEmailsAsync();
+  const index = current.findIndex(it => it.id === item.id);
+  if (index >= 0) {
+    current[index] = { ...current[index], ...item, updatedAt: new Date().toISOString() };
+  } else {
+    current.unshift({ ...item, createdAt: item.createdAt || new Date().toISOString() });
+  }
+  await saveScheduledEmailsAsync(current);
+  return item;
+}
+
+export async function loadEmailTemplatesAsync(): Promise<EmailItem[]> {
+  const templateMap = new Map<string, EmailItem>();
+  DEFAULT_EMAIL_ITEMS.forEach(d => {
+    templateMap.set(d.id, { ...d, status: 'READY' });
+  });
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'custom_templates')
+        .maybeSingle();
+
+      if (!error && data?.value && Array.isArray((data.value as any).templates)) {
+        const custom = (data.value as any).templates as EmailItem[];
+        custom.forEach(t => templateMap.set(t.id, { ...templateMap.get(t.id), ...t }));
+      }
+    } catch {}
+  }
+
+  return Array.from(templateMap.values());
+}
+
+export async function loadEmailDataAsync(): Promise<{ items: EmailItem[] }> {
+  const scheduled = await loadScheduledEmailsAsync();
+  const templates = await loadEmailTemplatesAsync();
+  const combined = [...scheduled, ...templates];
+  memoryCache.items = combined;
+  return { items: combined };
+}
+
+export function loadEmailDataSync(): { items: EmailItem[] } {
+  const scheduled = loadScheduledEmailsSync();
+  const templates = [...DEFAULT_EMAIL_ITEMS];
+  return { items: [...scheduled, ...templates] };
 }
 
 export async function saveEmailDataAsync(items: EmailItem[]): Promise<void> {
   memoryCache.items = items;
 
-  // 1. Write to local file
+  // Split into scheduled vs templates
+  const scheduled = items.filter(it => 
+    it.id.startsWith('sched_') || 
+    it.id.startsWith('resched_') || 
+    ['SCHEDULED', 'PENDING', 'READY'].includes((it.status || '').toUpperCase())
+  );
+  await saveScheduledEmailsAsync(scheduled);
+
   try {
     fs.writeFileSync(TEMPLATES_FILE, JSON.stringify(items, null, 2), 'utf8');
   } catch (err) {
     console.warn('[Storage] File write skipped (serverless environment):', err);
   }
 
-  // 2. Write to Supabase cloud database
   if (isSupabaseConfigured && supabase) {
     try {
       await supabase.from('app_settings').upsert({
@@ -581,6 +699,137 @@ export async function recordAutomationActivityAsync(
       }, { onConflict: 'key' });
     } catch (err) {
       console.error('[Storage] Supabase save activity error:', err);
+    }
+  }
+}
+
+
+// -------------------------------------------------------------
+// 6. TITHI DATES & LIVING TIMELINE PERSISTENCE (2003–2103)
+// -------------------------------------------------------------
+
+export interface TithiDateRecord {
+  id: string;
+  year: number;
+  date: string;
+  tithi_name?: string;
+  status: 'published' | 'draft' | 'unpublished';
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
+  published_at?: string | null;
+}
+
+export const INITIAL_VERIFIED_DATES: Array<Omit<TithiDateRecord, 'id' | 'created_at' | 'updated_at' | 'published_at'>> = [
+  { year: 2003, date: '28 September', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published', notes: 'Birth Year' },
+  { year: 2004, date: '16 October', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2005, date: '06 October', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2006, date: '25 September', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2007, date: '14 October', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2008, date: '02 October', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2009, date: '21 September', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2010, date: '11 October', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2011, date: '29 September', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2012, date: '18 October', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2013, date: '07 October', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2014, date: '26 September', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2015, date: '15 October', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2016, date: '04 October', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2017, date: '23 September', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2018, date: '12 October', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2019, date: '01 October', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2020, date: '19 September', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2021, date: '08 October', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2022, date: '28 September', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2023, date: '17 October', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2024, date: '05 October', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2025, date: '24 September', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2026, date: '14 October', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published', notes: 'Present Verified Year' },
+  { year: 2027, date: '03 October', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2028, date: '21 September', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2029, date: '10 October', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published' },
+  { year: 2030, date: '29 September', tithi_name: 'Ashwayuja Shukla Tritiya', status: 'published', notes: 'Initial Verified Horizon' },
+];
+
+const TITHI_FILE = path.join(DATA_DIR, 'tithi_dates.json');
+
+export function getInitialTithiDates(): TithiDateRecord[] {
+  const now = new Date().toISOString();
+  return INITIAL_VERIFIED_DATES.map((item, index) => ({
+    id: `seed-${item.year}-${index}`,
+    ...item,
+    created_at: now,
+    updated_at: now,
+    published_at: item.status === 'published' ? now : null,
+  }));
+}
+
+export async function loadTithiDatesAsync(): Promise<TithiDateRecord[]> {
+  // 1. Try Supabase tithi_dates table
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('tithi_dates')
+        .select('*')
+        .order('year', { ascending: true });
+
+      if (!error && data && data.length > 0) {
+        return data as TithiDateRecord[];
+      }
+    } catch (err) {
+      console.warn('[Storage] Supabase load tithi dates failed, falling back:', err);
+    }
+  }
+
+  // 2. Try Supabase app_settings key
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'tithi_dates')
+        .maybeSingle();
+
+      if (!error && data?.value && Array.isArray((data.value as any).dates)) {
+        return (data.value as any).dates as TithiDateRecord[];
+      }
+    } catch {}
+  }
+
+  // 3. Try Local File
+  try {
+    if (fs.existsSync(TITHI_FILE)) {
+      const dates = JSON.parse(fs.readFileSync(TITHI_FILE, 'utf8'));
+      if (Array.isArray(dates) && dates.length > 0) {
+        return dates;
+      }
+    }
+  } catch {}
+
+  // 4. Return Initial 2003–2030 Verified Seed
+  const seeded = getInitialTithiDates();
+  try {
+    fs.writeFileSync(TITHI_FILE, JSON.stringify(seeded, null, 2), 'utf8');
+  } catch {}
+  return seeded;
+}
+
+export async function saveTithiDatesAsync(dates: TithiDateRecord[]): Promise<void> {
+  // 1. Write local file
+  try {
+    fs.writeFileSync(TITHI_FILE, JSON.stringify(dates, null, 2), 'utf8');
+  } catch {}
+
+  // 2. Save to Supabase
+  if (isSupabaseConfigured && supabase) {
+    try {
+      await supabase.from('app_settings').upsert({
+        key: 'tithi_dates',
+        value: { dates },
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'key' });
+    } catch (err) {
+      console.error('[Storage] Supabase save tithi_dates error:', err);
     }
   }
 }

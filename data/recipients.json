@@ -52,14 +52,5 @@
     "status": "ACTIVE",
     "description": "Dedicated Recipient Profile 5",
     "updatedAt": "2026-09-26T08:41:25.634Z"
-  },
-  {
-    "id": "REC_TEST_7",
-    "label": "REC_TEST_7",
-    "name": "✦ TEST RECIPIENT ✦",
-    "status": "ACTIVE",
-    "description": "",
-    "email": "test_independent@gmail.com",
-    "updatedAt": "2026-09-26T12:36:33.893Z"
   }
 ]

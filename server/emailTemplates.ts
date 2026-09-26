@@ -104,7 +104,7 @@ May you always have reasons to smile, <span style="color: #F3E5AB; font-weight: 
     buttonText: 'A LITTLE SOMETHING FOR YOU →',
     scheduleDate: '2026-09-26',
     scheduleTime: '11:00',
-    status: 'SCHEDULED',
+    status: 'READY',
     enabled: true,
   },
 
@@ -127,7 +127,7 @@ May life always be kind to you, and may you never run out of reasons to laugh, t
     buttonText: 'KEEP THE SMILE GLOWING →',
     scheduleDate: '2026-09-26',
     scheduleTime: '12:00',
-    status: 'SCHEDULED',
+    status: 'READY',
     enabled: true,
   },
 
@@ -150,7 +150,7 @@ May the coming year bring you even more unforgettable moments, meaningful journe
     buttonText: 'REVISIT YOUR JOURNEY →',
     scheduleDate: '2026-09-26',
     scheduleTime: '18:00',
-    status: 'SCHEDULED',
+    status: 'READY',
     enabled: true,
   },
 
@@ -173,7 +173,7 @@ May your night be restful and calm, knowing that tomorrow brings you one step cl
     buttonText: 'A MOMENT OF GRATITUDE →',
     scheduleDate: '2026-09-26',
     scheduleTime: '22:30',
-    status: 'SCHEDULED',
+    status: 'READY',
     enabled: true,
   },
 
@@ -196,7 +196,7 @@ May this upcoming year be gentle on your heart, kind to your spirit, and filled 
     buttonText: 'OPEN THE NEXT CHAPTER →',
     scheduleDate: '2026-09-27',
     scheduleTime: '00:00',
-    status: 'SCHEDULED',
+    status: 'READY',
     enabled: true,
   },
 
@@ -219,7 +219,7 @@ May peace greet you in the smallest moments today, and may every hour bring a se
     buttonText: 'BEGIN WITH A SMILE →',
     scheduleDate: '2026-09-27',
     scheduleTime: '06:00',
-    status: 'SCHEDULED',
+    status: 'READY',
     enabled: true,
   },
 
@@ -242,7 +242,7 @@ This afternoon, we send you a heartfelt wish that all the kindness you give to o
     buttonText: 'A LITTLE WISH FOR YOU →',
     scheduleDate: '2026-09-27',
     scheduleTime: '12:00',
-    status: 'SCHEDULED',
+    status: 'READY',
     enabled: true,
   },
 
@@ -265,7 +265,7 @@ May every path you choose lead toward fulfillment, wisdom, and boundless joy, <s
     buttonText: 'A WISH FOR YOUR NEXT CHAPTER →',
     scheduleDate: '2026-09-27',
     scheduleTime: '18:00',
-    status: 'SCHEDULED',
+    status: 'READY',
     enabled: true,
   },
 
@@ -288,7 +288,7 @@ As tonight progresses and the hours grow shorter, take pride in everything you h
     buttonText: 'JUST FOR YOU →',
     scheduleDate: '2026-09-27',
     scheduleTime: '21:00',
-    status: 'SCHEDULED',
+    status: 'READY',
     enabled: true,
   },
 
@@ -311,7 +311,7 @@ May your cherished dreams find their time, may happiness stay longer than you ev
     buttonText: 'MAKE A WISH ✦ →',
     scheduleDate: '2026-09-27',
     scheduleTime: '23:11',
-    status: 'SCHEDULED',
+    status: 'READY',
     enabled: true,
   },
 
@@ -336,7 +336,7 @@ The countdown is almost complete, <span style="color: #F3E5AB; font-weight: 700;
     buttonText: 'WAIT FOR THE MOMENT →',
     scheduleDate: '2026-09-27',
     scheduleTime: '23:45',
-    status: 'SCHEDULED',
+    status: 'READY',
     enabled: true,
   },
 
@@ -363,7 +363,7 @@ See you on the other side of midnight, <span style="color: #F3E5AB; font-weight:
     buttonText: 'STEP INTO THE MOMENT →',
     scheduleDate: '2026-09-27',
     scheduleTime: '23:58',
-    status: 'SCHEDULED',
+    status: 'READY',
     enabled: true,
   },
 
@@ -390,7 +390,7 @@ May every dream you hold in your heart find its path, and may your days always b
     buttonText: 'ENTER YOUR BIRTHDAY EXPERIENCE →',
     scheduleDate: '2026-09-28',
     scheduleTime: '00:00',
-    status: 'SCHEDULED',
+    status: 'READY',
     enabled: true,
   },
 
@@ -415,7 +415,7 @@ As the clock strikes 08:00 AM today, we celebrate not just the date, but the exa
     buttonText: 'REVISIT YOUR BEGINNING →',
     scheduleDate: '2026-09-28',
     scheduleTime: '08:00',
-    status: 'SCHEDULED',
+    status: 'READY',
     enabled: true,
   },
 
@@ -438,7 +438,7 @@ May the divine energies of this sacred season shower you with enduring peace, ra
     buttonText: "DISCOVER TODAY'S TITHI →",
     scheduleDate: '2026-10-14',
     scheduleTime: '08:00',
-    status: 'SCHEDULED',
+    status: 'READY',
     enabled: true,
   },
 
@@ -461,6 +461,74 @@ Greetings to <span style="color: #F3E5AB; font-weight: 700;">{NAME}</span>.`,
     buttonText: 'OPEN THE EXPERIENCE →',
     scheduleDate: '2026-09-26',
     scheduleTime: '10:00',
+    status: 'READY',
+    enabled: true,
+  },
+  // 17. EMAIL A — TEST PROFILE MESSAGE (T1)
+  {
+    id: 'email-a',
+    name: 'Email A — Test Profile Message',
+    type: 'TEST',
+    subject: 'Verification Dispatch for Test Profile T1 ✦ SIRI Experience',
+    heading: 'RECIPIENT PROFILE VERIFIED — T1',
+    topLabel: 'PROFILE-BASED ROUTING SYSTEM',
+    message: `This is a verified test dispatch routed directly to recipient profile T1 (Test Profile).
+
+Profile ID: T1
+Target Mailbox: lohithmedisetti1432004@gmail.com
+Routing Status: ACTIVE
+Timezone: Asia/Kolkata (IST)`,
+    recipient: 'lohithmedisetti1432004@gmail.com',
+    destinationProfile: 'T1',
+    websiteUrl: DEFAULT_WEBSITE_URL,
+    linkAlias: 'VIEW VERIFIED EXPERIENCE →',
+    buttonText: 'VIEW VERIFIED EXPERIENCE →',
+    scheduleDate: '2026-09-26',
+    scheduleTime: '10:00',
+    status: 'READY',
+    enabled: true,
+  },
+
+  // 18. EMAIL B — SENDER 1 MESSAGE (S1)
+  {
+    id: 'email-b',
+    name: 'Email B — Sender 1 Message',
+    type: 'ADVANCE',
+    subject: 'Special Birthday Dispatch for Primary Profile S1 ✦',
+    heading: 'A HEARTFELT WISH FOR S1',
+    topLabel: 'PRIMARY ROUTE DISPATCH · S1',
+    message: `This email is assigned to primary recipient profile S1.
+
+May the coming days bring warmth, happiness, and reasons to celebrate every beautiful milestone, <span style="color: #F3E5AB; font-weight: 700;">{NAME}</span>.`,
+    recipient: 'lohithmedisetti1432004@gmail.com',
+    destinationProfile: 'S1',
+    websiteUrl: DEFAULT_WEBSITE_URL,
+    linkAlias: 'OPEN YOUR SPECIAL EXPERIENCE →',
+    buttonText: 'OPEN YOUR SPECIAL EXPERIENCE →',
+    scheduleDate: '2026-09-26',
+    scheduleTime: '11:00',
+    status: 'READY',
+    enabled: true,
+  },
+
+  // 19. EMAIL C — SENDER 2 MESSAGE (S2)
+  {
+    id: 'email-c',
+    name: 'Email C — Sender 2 Message',
+    type: 'ADVANCE',
+    subject: 'Mirror Dispatch for Secondary Profile S2 ✦',
+    heading: 'A GENTLE CELEBRATION FOR S2',
+    topLabel: 'SECONDARY ROUTE DISPATCH · S2',
+    message: `This email is assigned to secondary recipient profile S2.
+
+May every memory of the past make way for the brilliance of your special day, <span style="color: #F3E5AB; font-weight: 700;">{NAME}</span>.`,
+    recipient: 'lohithmedisetti1432004@gmail.com',
+    destinationProfile: 'S2',
+    websiteUrl: DEFAULT_WEBSITE_URL,
+    linkAlias: 'DISCOVER YOUR STORY →',
+    buttonText: 'DISCOVER YOUR STORY →',
+    scheduleDate: '2026-09-26',
+    scheduleTime: '12:00',
     status: 'READY',
     enabled: true,
   },
